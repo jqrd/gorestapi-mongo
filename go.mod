@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/blendle/zapdriver v1.3.1
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
-	github.com/gavv/httpexpect/v2 v2.1.0
+	github.com/gavv/httpexpect/v2 v2.8.0
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/cors v1.2.0
 	github.com/golang-migrate/migrate/v4 v4.15.1
@@ -15,6 +15,7 @@ require (
 	github.com/jackc/pgx/v4 v4.15.0
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/johejo/golang-migrate-extra v0.0.0-20211005021153-c17dd75f8b4a
+	github.com/klauspost/cpuid v1.2.1 // indirect
 	github.com/knadh/koanf v1.4.0
 	github.com/lib/pq v1.10.4 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
@@ -35,4 +36,5 @@ require (
 	google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa // indirect
 	google.golang.org/grpc v1.42.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
+	moul.io/http2curl v1.0.1-0.20190925090545-5cd742060b0e // indirect
 )
