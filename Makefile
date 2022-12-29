@@ -29,7 +29,7 @@ embed/public_html/api-docs/swagger.json: tools ${SWAGGERSOURCE}
 
 .PHONY: mocks
 mocks: tools
-	mockery -dir ./gorestapi -name GRStore
+	mockery --testonly --dir ./gorestapi --name GRStore
 
 .PHONY: ${EXECUTABLE}
 ${EXECUTABLE}: tools embed/public_html/api-docs/swagger.json
