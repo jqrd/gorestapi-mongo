@@ -1,13 +1,14 @@
 # Base API Example
 
-This API example is a basic framework for a REST API
+This API example is a basic framework for a REST API with MongoDB as a database.
+It's a fork of https://github.com/snowzach/gorestapi, which supports Postgres as the database.
 
 ## Compiling
 This is designed as a go module aware program and thus requires go 1.11 or better
 You can clone it anywhere, just run `make` inside the cloned directory to build
 
 ## Requirements
-This does require a postgres database to be setup and reachable. It will attempt to create and migrate the database upon starting.
+(TODO reworking to MongoDB) This does require a postgres database to be setup and reachable. It will attempt to create and migrate the database upon starting.
 
 ## Configuration
 The configuration is designed to be specified with environment variables in all caps with underscores instead of periods. 
@@ -16,7 +17,7 @@ Example:
 LOGGER_LEVEL=debug
 ```
 
-### Options:
+### Options: (TODO reworking configs for MongoDB)
 | Setting                         | Description                                                 | Default                 |
 | ------------------------------- | ----------------------------------------------------------- | ----------------------- |
 | logger.level                    | The default logging level                                   | "info"                  |
@@ -70,7 +71,7 @@ LOGGER_LEVEL=debug
 | database.wipe_confirm           | Wipe the database during start                              | false                   |
 
 
-## Data Storage
+## Data Storage (TODO reworking for MongoDB)
 Data is stored in a postgres database by default.
 
 ## Query Logic
