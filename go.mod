@@ -1,4 +1,4 @@
-module github.com/snowzach/gorestapi
+module github.com/jqrd/gorestapi-mongo
 
 go 1.16
 

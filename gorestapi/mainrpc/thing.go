@@ -7,9 +7,9 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/snowzach/queryp"
 
-	"github.com/snowzach/gorestapi/gorestapi"
-	"github.com/snowzach/gorestapi/pkg/server/render"
-	"github.com/snowzach/gorestapi/store"
+	"github.com/jqrd/gorestapi-mongo/gorestapi"
+	"github.com/jqrd/gorestapi-mongo/pkg/server/render"
+	"github.com/jqrd/gorestapi-mongo/store"
 )
 
 // ThingSave saves a thing

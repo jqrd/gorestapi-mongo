@@ -10,9 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/snowzach/gorestapi/gorestapi"
-	"github.com/snowzach/gorestapi/mocks"
-	"github.com/snowzach/gorestapi/store"
+	"github.com/jqrd/gorestapi-mongo/gorestapi"
+	"github.com/jqrd/gorestapi-mongo/mocks"
+	"github.com/jqrd/gorestapi-mongo/store"
 )
 
 func TestThingPost(t *testing.T) {

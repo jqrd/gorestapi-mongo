@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"github.com/jackc/pgconn"
-	"github.com/snowzach/gorestapi/store"
+	"github.com/jqrd/gorestapi-mongo/store"
 )
 
 // Lookup of postgres error codes to basic errors we can return to a user

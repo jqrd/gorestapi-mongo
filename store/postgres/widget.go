@@ -9,9 +9,9 @@ import (
 	"github.com/snowzach/queryp"
 	"github.com/snowzach/queryp/qppg"
 
-	"github.com/snowzach/gorestapi/gorestapi"
-	"github.com/snowzach/gorestapi/store"
-	"github.com/snowzach/gorestapi/store/driver/postgres"
+	"github.com/jqrd/gorestapi-mongo/gorestapi"
+	"github.com/jqrd/gorestapi-mongo/store"
+	"github.com/jqrd/gorestapi-mongo/store/driver/postgres"
 )
 
 const (

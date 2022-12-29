@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/snowzach/gorestapi/cmd"
+	"github.com/jqrd/gorestapi-mongo/cmd"
 )
 
 func main() {

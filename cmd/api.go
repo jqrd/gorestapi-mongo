@@ -10,16 +10,16 @@ import (
 	cli "github.com/spf13/cobra"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/snowzach/gorestapi/embed"
-	"github.com/snowzach/gorestapi/gorestapi/mainrpc"
-	"github.com/snowzach/gorestapi/pkg/conf"
-	"github.com/snowzach/gorestapi/pkg/log"
-	"github.com/snowzach/gorestapi/pkg/server"
-	"github.com/snowzach/gorestapi/pkg/server/logger"
-	"github.com/snowzach/gorestapi/pkg/server/metrics"
-	"github.com/snowzach/gorestapi/pkg/signal"
-	"github.com/snowzach/gorestapi/pkg/version"
-	"github.com/snowzach/gorestapi/store/postgres"
+	"github.com/jqrd/gorestapi-mongo/embed"
+	"github.com/jqrd/gorestapi-mongo/gorestapi/mainrpc"
+	"github.com/jqrd/gorestapi-mongo/pkg/conf"
+	"github.com/jqrd/gorestapi-mongo/pkg/log"
+	"github.com/jqrd/gorestapi-mongo/pkg/server"
+	"github.com/jqrd/gorestapi-mongo/pkg/server/logger"
+	"github.com/jqrd/gorestapi-mongo/pkg/server/metrics"
+	"github.com/jqrd/gorestapi-mongo/pkg/signal"
+	"github.com/jqrd/gorestapi-mongo/pkg/version"
+	"github.com/jqrd/gorestapi-mongo/store/postgres"
 )
 
 func init() {
