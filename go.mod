@@ -27,10 +27,10 @@ require (
 	github.com/snowzach/queryp v0.3.5
 	github.com/spf13/cobra v1.4.0
 	github.com/stretchr/testify v1.7.0
+	go.mongodb.org/mongo-driver v1.11.1
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.21.0
-	golang.org/x/crypto v0.0.0-20220331220935-ae2d96664a29 // indirect
 	golang.org/x/sys v0.0.0-20220406163625-3f8b81556e12 // indirect
 	google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa // indirect
 	google.golang.org/grpc v1.42.0 // indirect
