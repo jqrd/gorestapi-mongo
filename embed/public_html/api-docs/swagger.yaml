@@ -42,7 +42,8 @@ definitions:
         description: Name
         type: string
       thing:
-        $ref: '#/definitions/gorestapi.Thing'
+        allOf:
+        - $ref: '#/definitions/gorestapi.Thing'
         description: Loaded Structs
       thing_id:
         description: ThingID
@@ -67,7 +68,7 @@ definitions:
     properties:
       error:
         type: string
-      error_id:
+      request_id:
         type: string
       status:
         type: string

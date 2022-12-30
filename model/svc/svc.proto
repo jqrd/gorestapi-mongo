@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package gorestapi.svc;
+
+//import "google/protobuf/timestamp.proto";
+//import "google/protobuf/wrappers.proto";
+
+import "model/tagger/tagger.proto";
+import "model/common.proto";
+
+option go_package = "./model/svc";
+
+message Widget {
+    string Id = 1 [(tagger.tags) = "bson:\"_id,omitempty\" json:\"id,omitempty\""];
+    string Name = 2;
+    gorestapi.common.WidgetType Type = 3;
+    string Description = 4;
+}
+
+message ThingWidget {
+    string WidgetId = 1;
+    string Name = 2;
+    gorestapi.common.WidgetType Type = 3;
+}
+
+message Thing {
+    string Id = 1 [(tagger.tags) = "bson:\"_id,omitempty\" json:\"id,omitempty\""];
+    string Name = 2;
+    string Description = 3;
+    repeated ThingWidget Widgets = 4;
+}

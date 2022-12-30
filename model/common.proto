@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package gorestapi.common;
+
+option go_package = "github.com/jqrd/gorestapi-mongo/model;model";
+
+enum WidgetType {
+    Unspecified = 0;
+    Type1 = 1;
+    Type2 = 2;
+    Special = 3; 
+}

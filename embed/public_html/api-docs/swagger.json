@@ -469,7 +469,11 @@
                 },
                 "thing": {
                     "description": "Loaded Structs",
-                    "$ref": "#/definitions/gorestapi.Thing"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/gorestapi.Thing"
+                        }
+                    ]
                 },
                 "thing_id": {
                     "description": "ThingID",
@@ -504,7 +508,7 @@
                 "error": {
                     "type": "string"
                 },
-                "error_id": {
+                "request_id": {
                     "type": "string"
                 },
                 "status": {

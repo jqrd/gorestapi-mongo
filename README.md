@@ -3,22 +3,19 @@
 This API example is a basic framework for a REST API with MongoDB as a database.
 It's a fork of https://github.com/snowzach/gorestapi, which supports Postgres as the database.
 
-## Compiling
-This is designed as a go module aware program and thus requires go 1.11 or better
-You can clone it anywhere, just run `make` inside the cloned directory to build
-
 ## Requirements
+Protocol Buffers are used to define the db and service schema, and to generate the Go types used for reading/writing data from MongoDB. Install `protoc` following the [install docs](https://grpc.io/docs/protoc-installation/).
 
-### Postgres
-(TODO reworking to MongoDB) This does require a postgres database to be setup and reachable. It will attempt to create and migrate the database upon starting.
+Postgres -- TODO remove dependency.
 
-### MongoDB
-TODO divide repo into src and infra, add scripts to stand up MongoDB with Docker.
+MongoDB -- TODO divide repo into src and infra, add scripts to stand up MongoDB with Docker.
 
-### Mockery
-Mockery v3.0.0.alpha is used. It's expected to be available in PATH.
+Other tools are installed automatically when building (or just run `make tools` to install them up front): `protoc-gen-go`, `protoc-gen-gotag`, `mockery`, `swag`.
+Ensure that `$HOME/go/bin` is in your path for these external tools to work.
 
-There's multiple ways to install it; the recommended way is to *not* add it to the go modules, so I'd recommend to check out the repo at https://github.com/vektra/mockery, `go build`, then copy it to e.g. `/usr/local/go/bin/mockery` on Linux or `~/go/bin/mockery` on MacOS.
+## Compiling
+This requires Go 1.19 or better.
+You can clone it anywhere, just run `make` inside the cloned directory to build.
 
 ## Configuration
 The configuration is designed to be specified with environment variables in all caps with underscores instead of periods. 

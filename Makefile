@@ -3,20 +3,30 @@ GITVERSION := $(shell git describe --dirty --always --tags --long)
 GOPATH ?= ${HOME}/go
 PACKAGENAME := $(shell go list -m -f '{{.Path}}')
 TOOLS := ${GOPATH}/bin/mockery \
-	${GOPATH}/bin/swag
+	${GOPATH}/bin/swag \
+	${GOPATH}/bin/protoc-gen-go \
+	${GOPATH}/bin/protoc-gen-gotag
 SWAGGERSOURCE = $(wildcard gorestapi/*.go) \
 	$(wildcard gorestapi/mainrpc/*.go)
 
 .PHONY: default
 default: ${EXECUTABLE}
 
+.PHONY: tools
 tools: ${TOOLS}
 
 ${GOPATH}/bin/mockery:
-	go install github.com/vektra/mockery/v2@latest
+	go install github.com/vektra/mockery/v3@v3.0.0-alpha.0
 
 ${GOPATH}/bin/swag:
 	go install github.com/swaggo/swag/cmd/swag@latest
+
+${GOPATH}/bin/protoc-gen-go:
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+
+${GOPATH}/bin/protoc-gen-gotag:
+	go install github.com/srikrsna/protoc-gen-gotag
+
 
 .PHONY: swagger
 swagger: tools ${SWAGGERSOURCE}
@@ -28,8 +38,49 @@ embed/public_html/api-docs/swagger.json: tools ${SWAGGERSOURCE}
 	rm embed/public_html/api-docs/docs.go
 
 .PHONY: mocks
-mocks: tools
-	mockery --testonly --dir ./gorestapi --name GRStore
+mocks: tools mocks/GRStore.go
+
+mocks/GRStore.go: gorestapi/datastore.go
+	mockery --dir ./gorestapi --name GRStore
+
+
+.PHONY: proto
+proto: model/db/db.pb.go \
+		model/svc/svc.pb.go
+
+.PHONY: proto-clean
+proto-clean:
+	@rm -f model/db/recipes.pb.go
+	@rm -f model/svc/recipes.pb.go
+	@rm -f model/common.pb.go
+	@rm -f model/tagger/tagger.pb.go
+
+model/db/db.pb.go: model/tagger/tagger.pb.go \
+		model/common.pb.go \
+		model/db/db.proto
+	protoc -I /usr/local/include -I . --go_out=:. model/db/db.proto
+	protoc -I /usr/local/include -I . --gotag_out=auto="bson-as-camel+json-as-camel":. model/db/db.proto
+	protoc -I /usr/local/include -I . --gotag_out=xxx="bson+\"-\" json+\"-\"":. model/db/db.proto
+
+model/svc/svc.pb.go: model/tagger/tagger.pb.go \
+		model/common.pb.go \
+		model/svc/svc.proto
+	protoc -I /usr/local/include -I . --go_out=:. model/svc/svc.proto
+	protoc -I /usr/local/include -I . --gotag_out=auto="bson-as-camel+json-as-camel":. model/svc/svc.proto
+	protoc -I /usr/local/include -I . --gotag_out=xxx="bson+\"-\" json+\"-\"":. model/svc/svc.proto
+
+model/common.pb.go: model/common.proto
+	protoc -I /usr/local/include -I . --go_out=:. model/common.proto
+# TODO without the full package path (e.g. with relative path), wrong import path is generated in the files that import this, but with it the file gets placed in an unexpected place
+	@mv github.com/jqrd/gorestapi-mongo/model/common.pb.go model/common.pb.go
+	@rm -r github.com
+
+model/tagger/tagger.pb.go: model/tagger/tagger.proto
+	protoc -I /usr/local/include -I . --go_out=:. model/tagger/tagger.proto
+# TODO without the full package path (e.g. with relative path), wrong import path is generated in the files that import this, but with it the file gets placed in an unexpected place
+	@mv github.com/jqrd/gorestapi-mongo/model/tagger/tagger.pb.go model/tagger/tagger.pb.go
+	@rm -r github.com
+
 
 .PHONY: ${EXECUTABLE}
 ${EXECUTABLE}: tools embed/public_html/api-docs/swagger.json
