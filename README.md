@@ -8,7 +8,17 @@ This is designed as a go module aware program and thus requires go 1.11 or bette
 You can clone it anywhere, just run `make` inside the cloned directory to build
 
 ## Requirements
+
+### Postgres
 (TODO reworking to MongoDB) This does require a postgres database to be setup and reachable. It will attempt to create and migrate the database upon starting.
+
+### MongoDB
+TODO divide repo into src and infra, add scripts to stand up MongoDB with Docker.
+
+### Mockery
+Mockery v3.0.0.alpha is used. It's expected to be available in PATH.
+
+There's multiple ways to install it; the recommended way is to *not* add it to the go modules, so I'd recommend to check out the repo at https://github.com/vektra/mockery, `go build`, then copy it to e.g. `/usr/local/go/bin/mockery` on Linux or `~/go/bin/mockery` on MacOS.
 
 ## Configuration
 The configuration is designed to be specified with environment variables in all caps with underscores instead of periods. 
