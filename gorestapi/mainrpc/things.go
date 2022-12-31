@@ -131,7 +131,7 @@ func (api *ThingsAPI) Create() http.HandlerFunc {
 //
 // @ID ThingsAPI.GetByID
 // @Tags things
-// @Summary Get ting
+// @Summary Get thing
 // @Description Get a thing
 // @Param id path string true "ID"
 // @Success 200 {object} svc.Thing
