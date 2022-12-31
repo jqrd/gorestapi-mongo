@@ -18,7 +18,6 @@ require (
 	github.com/prometheus/client_golang v1.12.1
 	github.com/rs/xid v1.4.0
 	github.com/snowzach/certtools v1.0.2
-	github.com/snowzach/queryp v0.3.5
 	github.com/spf13/cobra v1.4.0
 	github.com/stretchr/testify v1.7.0
 	go.mongodb.org/mongo-driver v1.11.1

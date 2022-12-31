@@ -998,8 +998,6 @@ github.com/snowflakedb/gosnowflake v1.3.5/go.mod h1:13Ky+lxzIm3VqNDZJdyvu9MCGy+W
 github.com/snowflakedb/gosnowflake v1.6.3/go.mod h1:6hLajn6yxuJ4xUHZegMekpq9rnQbGJ7TMwXjgTmA6lg=
 github.com/snowzach/certtools v1.0.2 h1:C1XzUZZeIsJjk10/CMSBYmFTUtFSgq+dowsMjJhmsPE=
 github.com/snowzach/certtools v1.0.2/go.mod h1:rZqO5JtBTNCAEu184f6KqG1x3Hfg1KX3kVtY93L6xhQ=
-github.com/snowzach/queryp v0.3.5 h1:HilG1XfJRaA0Z49kFkHHI6kHjtXRd0eN4P1msXbPM3Q=
-github.com/snowzach/queryp v0.3.5/go.mod h1:QCSTgQZ6VCEWv226gfo20NedrMJiuC2QazVghdmanto=
 github.com/soheilhy/cmux v0.1.4/go.mod h1:IM3LyeVVIOuxMH7sFAkER9+bJ4dT7Ms6E4xg4kGIyLM=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
 github.com/spf13/afero v1.1.2/go.mod h1:j4pytiNVoe2o6bmDsKpLACNPDBIoEAkihy7loJ1B0CQ=
