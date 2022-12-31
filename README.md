@@ -1,3 +1,5 @@
+WORK IN PROGRESS, DO NOT USE :)
+
 # Base API Example
 
 This API example is a basic framework for a REST API with MongoDB as a database.
@@ -5,8 +7,6 @@ It's a fork of https://github.com/snowzach/gorestapi, which supports Postgres as
 
 ## Requirements
 Protocol Buffers are used to define the db and service schema, and to generate the Go types used for reading/writing data from MongoDB. Install `protoc` following the [install docs](https://grpc.io/docs/protoc-installation/).
-
-Postgres -- TODO remove dependency.
 
 MongoDB -- TODO divide repo into src and infra, add scripts to stand up MongoDB with Docker.
 

@@ -10,6 +10,8 @@ import "model/common.proto";
 
 option go_package = "./model/db";
 
+// TODO add created and updated dates
+
 message Widget {
     string Id = 1 [(tagger.tags) = "bson:\"_id,omitempty\" json:\"id,omitempty\""];
     string Name = 2;

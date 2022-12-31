@@ -25,24 +25,12 @@
                     "things"
                 ],
                 "summary": "Find things",
-                "operationId": "ThingsFind",
+                "operationId": "Find",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "id",
-                        "name": "id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "name",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "description",
-                        "name": "description",
+                        "description": "query",
+                        "name": "q",
                         "in": "query"
                     },
                     {
@@ -56,12 +44,6 @@
                         "description": "limit",
                         "name": "limit",
                         "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "query",
-                        "name": "sort",
-                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -70,7 +52,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/gorestapi.Thing"
+                                "$ref": "#/definitions/svc.Thing"
                             }
                         }
                     },
@@ -89,12 +71,12 @@
                 }
             },
             "post": {
-                "description": "Save a thing",
+                "description": "Create a thing",
                 "tags": [
                     "things"
                 ],
-                "summary": "Save thing",
-                "operationId": "ThingSave",
+                "summary": "Create a thing",
+                "operationId": "ThingsAPI.Create",
                 "parameters": [
                     {
                         "description": "Thing",
@@ -102,7 +84,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/gorestapi.ThingExample"
+                            "$ref": "#/definitions/svc.Thing"
                         }
                     }
                 ],
@@ -110,7 +92,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/gorestapi.Thing"
+                            "$ref": "#/definitions/svc.Thing"
                         }
                     },
                     "400": {
@@ -134,8 +116,8 @@
                 "tags": [
                     "things"
                 ],
-                "summary": "Get thing",
-                "operationId": "ThingGetByID",
+                "summary": "Get ting",
+                "operationId": "ThingsAPI.GetByID",
                 "parameters": [
                     {
                         "type": "string",
@@ -149,7 +131,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/gorestapi.Thing"
+                            "$ref": "#/definitions/svc.Thing"
                         }
                     },
                     "400": {
@@ -178,202 +160,7 @@
                     "things"
                 ],
                 "summary": "Delete thing",
-                "operationId": "ThingDeleteByID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Success"
-                    },
-                    "400": {
-                        "description": "Invalid Argument",
-                        "schema": {
-                            "$ref": "#/definitions/render.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/render.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Error",
-                        "schema": {
-                            "$ref": "#/definitions/render.ErrResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/widgets": {
-            "get": {
-                "description": "Find widgets",
-                "tags": [
-                    "widgets"
-                ],
-                "summary": "Find widgets",
-                "operationId": "WidgetsFind",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "id",
-                        "name": "id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "name",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "description",
-                        "name": "description",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "offset",
-                        "name": "offset",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "limit",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "query",
-                        "name": "sort",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/gorestapi.Widget"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid Argument",
-                        "schema": {
-                            "$ref": "#/definitions/render.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Error",
-                        "schema": {
-                            "$ref": "#/definitions/render.ErrResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Save a widget",
-                "tags": [
-                    "widgets"
-                ],
-                "summary": "Save widget",
-                "operationId": "WidgetSave",
-                "parameters": [
-                    {
-                        "description": "Widget",
-                        "name": "widget",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/gorestapi.WidgetExample"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/gorestapi.Widget"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid Argument",
-                        "schema": {
-                            "$ref": "#/definitions/render.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Error",
-                        "schema": {
-                            "$ref": "#/definitions/render.ErrResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/widgets/{id}": {
-            "get": {
-                "description": "Get a widget",
-                "tags": [
-                    "widgets"
-                ],
-                "summary": "Get widget",
-                "operationId": "WidgetGetByID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/gorestapi.Widget"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid Argument",
-                        "schema": {
-                            "$ref": "#/definitions/render.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/render.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Error",
-                        "schema": {
-                            "$ref": "#/definitions/render.ErrResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a widget",
-                "tags": [
-                    "widgets"
-                ],
-                "summary": "Delete widget",
-                "operationId": "WidgetDeleteByID",
+                "operationId": "ThingsAPI.DeleteByID",
                 "parameters": [
                     {
                         "type": "string",
@@ -410,97 +197,20 @@
         }
     },
     "definitions": {
-        "gorestapi.Thing": {
-            "type": "object",
-            "properties": {
-                "created": {
-                    "description": "Created Timestamp",
-                    "type": "string"
-                },
-                "description": {
-                    "description": "Description",
-                    "type": "string"
-                },
-                "id": {
-                    "description": "ID (Auto-Generated)",
-                    "type": "string"
-                },
-                "name": {
-                    "description": "Name",
-                    "type": "string"
-                },
-                "updated": {
-                    "description": "Updated Timestamp",
-                    "type": "string"
-                }
-            }
-        },
-        "gorestapi.ThingExample": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "description": "Description",
-                    "type": "string"
-                },
-                "name": {
-                    "description": "Name",
-                    "type": "string"
-                }
-            }
-        },
-        "gorestapi.Widget": {
-            "type": "object",
-            "properties": {
-                "created": {
-                    "description": "Created Timestamp",
-                    "type": "string"
-                },
-                "description": {
-                    "description": "Description",
-                    "type": "string"
-                },
-                "id": {
-                    "description": "ID (Auto-Generated)",
-                    "type": "string"
-                },
-                "name": {
-                    "description": "Name",
-                    "type": "string"
-                },
-                "thing": {
-                    "description": "Loaded Structs",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/gorestapi.Thing"
-                        }
-                    ]
-                },
-                "thing_id": {
-                    "description": "ThingID",
-                    "type": "string"
-                },
-                "updated": {
-                    "description": "Updated Timestamp",
-                    "type": "string"
-                }
-            }
-        },
-        "gorestapi.WidgetExample": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "description": "Description",
-                    "type": "string"
-                },
-                "name": {
-                    "description": "Name",
-                    "type": "string"
-                },
-                "thing_id": {
-                    "description": "ThingID",
-                    "type": "string"
-                }
-            }
+        "model.WidgetType": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3
+            ],
+            "x-enum-varnames": [
+                "WidgetType_Unspecified",
+                "WidgetType_Type1",
+                "WidgetType_Type2",
+                "WidgetType_Special"
+            ]
         },
         "render.ErrResponse": {
             "type": "object",
@@ -512,6 +222,40 @@
                     "type": "string"
                 },
                 "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "svc.Thing": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "widgets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/svc.ThingWidget"
+                    }
+                }
+            }
+        },
+        "svc.ThingWidget": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/model.WidgetType"
+                },
+                "widgetId": {
                     "type": "string"
                 }
             }

@@ -8,31 +8,30 @@ import (
 
 // Server is the API web server
 type Server struct {
-	logger  *zap.SugaredLogger
-	router  chi.Router
-	grStore gorestapi.GRStore
+	logger *zap.SugaredLogger
+	router chi.Router
+	store  gorestapi.DataStore
 }
 
-// Setup will setup the API listener
-func Setup(router chi.Router, grStore gorestapi.GRStore) error {
+// Set up the API listener
+func Setup(router chi.Router, store gorestapi.DataStore) error {
 
 	s := &Server{
-		logger:  zap.S().With("package", "thingrpc"),
-		router:  router,
-		grStore: grStore,
+		logger: zap.S().With("package", "thingrpc"),
+		router: router,
+		store:  store,
 	}
+
+	things := s.NewThingsAPI()
 
 	// Base Functions
 	s.router.Route("/api", func(r chi.Router) {
-		r.Post("/things", s.ThingSave())
-		r.Get("/things/{id}", s.ThingGetByID())
-		r.Delete("/things/{id}", s.ThingDeleteByID())
-		r.Get("/things", s.ThingsFind())
+		r.Post("/things", things.Create())
+		r.Get("/things/{id}", things.GetByID())
+		r.Delete("/things/{id}", things.DeleteByID())
+		r.Get("/things", things.Find())
 
-		r.Post("/widgets", s.WidgetSave())
-		r.Get("/widgets/{id}", s.WidgetGetByID())
-		r.Delete("/widgets/{id}", s.WidgetDeleteByID())
-		r.Get("/widgets", s.WidgetsFind())
+		// TODO widgets
 	})
 
 	return nil

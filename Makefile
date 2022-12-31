@@ -38,10 +38,13 @@ embed/public_html/api-docs/swagger.json: tools ${SWAGGERSOURCE}
 	rm embed/public_html/api-docs/docs.go
 
 .PHONY: mocks
-mocks: tools mocks/GRStore.go
+mocks: tools mocks/MongoCollection.go mocks/DataStore.go
 
-mocks/GRStore.go: gorestapi/datastore.go
-	mockery --dir ./gorestapi --name GRStore
+mocks/MongoCollection.go: store/mongodb/collection.go
+	mockery --dir ./store/mongodb --name MongoCollection
+
+mocks/DataStore.go: gorestapi/datastore.go
+	mockery --dir ./gorestapi --name DataStore
 
 
 .PHONY: proto
@@ -50,8 +53,8 @@ proto: model/db/db.pb.go \
 
 .PHONY: proto-clean
 proto-clean:
-	@rm -f model/db/recipes.pb.go
-	@rm -f model/svc/recipes.pb.go
+	@rm -f model/db/db.pb.go
+	@rm -f model/svc/svc.pb.go
 	@rm -f model/common.pb.go
 	@rm -f model/tagger/tagger.pb.go
 

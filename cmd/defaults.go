@@ -45,11 +45,11 @@ func defaults() map[string]interface{} {
 		"server.metrics.ignore_paths": []string{"/version"},
 
 		// Database Settings
-		"database.username":              "postgres",
+		"database.username":              "root",
 		"database.password":              "password",
-		"database.host":                  "postgres",
-		"database.port":                  5432,
-		"database.database":              "gorestapi",
+		"database.host":                  "localhost",
+		"database.port":                  27017,
+		"database.database":              "gorestapiDB",
 		"database.auto_create":           true,
 		"database.search_path":           "",
 		"database.sslmode":               "disable",

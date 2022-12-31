@@ -8,10 +8,11 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	cli "github.com/spf13/cobra"
-	"go.uber.org/zap/zapcore"
 
 	"github.com/jqrd/gorestapi-mongo/embed"
+	"github.com/jqrd/gorestapi-mongo/gorestapi"
 	"github.com/jqrd/gorestapi-mongo/gorestapi/mainrpc"
+	"github.com/jqrd/gorestapi-mongo/model/db"
 	"github.com/jqrd/gorestapi-mongo/pkg/conf"
 	"github.com/jqrd/gorestapi-mongo/pkg/log"
 	"github.com/jqrd/gorestapi-mongo/pkg/server"
@@ -19,7 +20,7 @@ import (
 	"github.com/jqrd/gorestapi-mongo/pkg/server/metrics"
 	"github.com/jqrd/gorestapi-mongo/pkg/signal"
 	"github.com/jqrd/gorestapi-mongo/pkg/version"
-	"github.com/jqrd/gorestapi-mongo/store/postgres"
+	"github.com/jqrd/gorestapi-mongo/store/mongodb"
 )
 
 func init() {
@@ -145,49 +146,47 @@ func newServer(handler http.Handler) (*server.Server, error) {
 	// Parse the config
 	var serverConfig = &server.Config{Handler: handler}
 	if err := conf.C.Unmarshal(serverConfig, conf.UnmarshalConf{Path: "server"}); err != nil {
-		fmt.Errorf("could not parse server config: %v", err)
+		log.Fatalf("could not parse server config: %v", err)
 	}
 
 	// Create the server
 	s, err := server.New(serverConfig)
 	if err != nil {
-		fmt.Errorf("could not create server: %v", err)
+		log.Fatalf("could not create server: %v", err)
 	}
 
 	return s, nil
 
 }
 
-func newDatabase() (*postgres.Client, error) {
+func newDatabase() (gorestapi.DataStore, error) {
 
 	var err error
 
 	// Database config
-	var postgresConfig = &postgres.Config{}
-	if err := conf.C.Unmarshal(postgresConfig, conf.UnmarshalConf{Path: "database"}); err != nil {
+	var config = &mongodb.Config{}
+	if err := conf.C.Unmarshal(config, conf.UnmarshalConf{Path: "database"}); err != nil {
 		return nil, fmt.Errorf("could not parse database config: %v", err)
 	}
 
-	// Loggers
-	postgresConfig.Logger = log.NewWrapper(log.Base.Named("store.postgres"), zapcore.InfoLevel)
-	postgresConfig.QueryLogger = log.NewWrapper(log.Base.Named("store.postgres.query"), zapcore.DebugLevel)
+	// TODO Loggers
+	// postgresConfig.Logger = log.NewWrapper(log.Base.Named("store.postgres"), zapcore.InfoLevel)
+	// postgresConfig.QueryLogger = log.NewWrapper(log.Base.Named("store.postgres.query"), zapcore.DebugLevel)
 
 	// if conf.C.Bool("store.postgres.log_queries") {
 	// 	postgresConfig.QueryLogger = log.NewWrapper(log.Base.Named("store.postgres.query"), zapcore.DebugLevel)
 	// }
 
-	// Migrations
-	postgresConfig.MigrationSource, err = embed.MigrationSource()
-	if err != nil {
-		return nil, fmt.Errorf("could not get database migrations error: %w", err)
-	}
-
 	// Create database
-	db, err := postgres.New(postgresConfig)
+	client, err := mongodb.New(config)
 	if err != nil {
 		return nil, fmt.Errorf("could not create database client: %w", err)
 	}
 
-	return db, nil
+	store := gorestapi.NewDataStore(
+		mongodb.Collection[*db.Widget](client, "widgets"),
+		mongodb.Collection[*db.Thing](client, "things"),
+	)
 
+	return store, nil
 }

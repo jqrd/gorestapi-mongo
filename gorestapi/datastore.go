@@ -1,20 +1,34 @@
 package gorestapi
 
 import (
-	"context"
-
-	"github.com/snowzach/queryp"
+	"github.com/jqrd/gorestapi-mongo/model/db"
+	"github.com/jqrd/gorestapi-mongo/store/mongodb"
 )
 
-// GRStore is the persistent store of things
-type GRStore interface {
-	ThingGetByID(ctx context.Context, id string) (*Thing, error)
-	ThingSave(ctx context.Context, thing *Thing) error
-	ThingDeleteByID(ctx context.Context, id string) error
-	ThingsFind(ctx context.Context, qp *queryp.QueryParameters) ([]*Thing, int64, error)
+type DataStore interface {
+	Widgets() mongodb.MongoCollection[*db.Widget]
+	Things() mongodb.MongoCollection[*db.Thing]
+}
 
-	WidgetGetByID(ctx context.Context, id string) (*Widget, error)
-	WidgetSave(ctx context.Context, thing *Widget) error
-	WidgetDeleteByID(ctx context.Context, id string) error
-	WidgetsFind(ctx context.Context, qp *queryp.QueryParameters) ([]*Widget, int64, error)
+type dataStore struct {
+	widgets mongodb.MongoCollection[*db.Widget]
+	things  mongodb.MongoCollection[*db.Thing]
+}
+
+func (s *dataStore) Widgets() mongodb.MongoCollection[*db.Widget] {
+	return s.widgets
+}
+
+func (s *dataStore) Things() mongodb.MongoCollection[*db.Thing] {
+	return s.things
+}
+
+func NewDataStore(
+	widgets mongodb.MongoCollection[*db.Widget],
+	things mongodb.MongoCollection[*db.Thing],
+) DataStore {
+	return &dataStore{
+		widgets: widgets,
+		things:  things,
+	}
 }

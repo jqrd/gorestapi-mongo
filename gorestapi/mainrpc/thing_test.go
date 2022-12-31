@@ -9,10 +9,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"go.mongodb.org/mongo-driver/bson"
 
-	"github.com/jqrd/gorestapi-mongo/gorestapi"
 	"github.com/jqrd/gorestapi-mongo/mocks"
-	"github.com/jqrd/gorestapi-mongo/store"
+	"github.com/jqrd/gorestapi-mongo/model/db"
+	"github.com/jqrd/gorestapi-mongo/model/svc"
 )
 
 func TestThingPost(t *testing.T) {
@@ -23,28 +24,45 @@ func TestThingPost(t *testing.T) {
 	defer server.Close()
 
 	// Mock Store and server
-	grs := new(mocks.GRStore)
-	err := Setup(r, grs)
+	store := new(mocks.DataStore)
+	err := Setup(r, store)
 	assert.Nil(t, err)
 
 	// Create Item
-	i := &gorestapi.Thing{
-		ID:   "id",
-		Name: "name",
+	widgets := make([]*svc.ThingWidget, 0)
+	input := &svc.Thing{
+		Name:        "name",
+		Description: "descr",
+		Widgets:     widgets,
 	}
 
-	// Mock call to item store
-	grs.On("ThingSave", mock.Anything, i).Once().Return(nil)
+	bytes, _ := bson.Marshal(input)
+	expected := &svc.Thing{}
+	bson.Unmarshal(bytes, expected)
+	expected.Id = "a42"
+
+	// Mock calls to data store
+	thingsCol := new(mocks.MongoCollection[*db.Thing])
+	store.On("Things").Return(thingsCol)
+	thingsCol.On("InsertOne", mock.Anything, mock.Anything).
+		Run(func(args mock.Arguments) { args.Get(1).(*db.Thing).Id = expected.Id }).
+		Return(nil)
 
 	// Make request and validate we get back proper response
-	e := httpexpect.New(t, server.URL)
-	e.POST("/api/things").WithJSON(i).Expect().Status(http.StatusOK).JSON().Object().Equal(i)
+	e := httpexpect.Default(t, server.URL)
+	e.POST("/api/things").WithJSON(input).Expect().
+		Status(http.StatusOK).
+		JSON().Object().Equal(expected)
 
 	// Check remaining expectations
-	grs.AssertExpectations(t)
+	store.AssertExpectations(t)
+	thingsCol.AssertExpectations(t)
 
 }
 
+// TODO also test post thing with widgets
+
+/* TODO
 func TestThingsFind(t *testing.T) {
 
 	// Create test server
@@ -134,3 +152,4 @@ func TestThingDeleteByID(t *testing.T) {
 	grs.AssertExpectations(t)
 
 }
+*/
