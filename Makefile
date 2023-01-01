@@ -1,21 +1,19 @@
 EXECUTABLE := gorestapicmd
 GITVERSION := $(shell git describe --dirty --always --tags --long)
 GOPATH ?= ${HOME}/go
-PACKAGENAME := $(shell go list -m -f '{{.Path}}')
+PACKAGENAME := $(shell cd src && go list -m -f '{{.Path}}')
 TOOLS := ${GOPATH}/bin/mockery \
 	${GOPATH}/bin/swag \
 	${GOPATH}/bin/protoc-gen-go \
 	${GOPATH}/bin/protoc-gen-gotag
-SWAGGERSOURCE = $(wildcard gorestapi/*.go) \
-	$(wildcard gorestapi/mainrpc/*.go)
-GOSOURCE = go.mod \
-	go.sum \
-	$(shell find . -type f -name '*.go') \
-	$(shell find ./embed -type f)
+SWAGGERSOURCE = $(wildcard src/gorestapi/*.go) \
+	$(wildcard src/gorestapi/mainrpc/*.go)
+GOSOURCE = $(shell find ./src -type f)
 
 
 ${EXECUTABLE}: tools ${GOSOURCE} swagger
 	# Compiling...
+	@cd src
 	go build -ldflags "-X ${PACKAGENAME}/conf.Executable=${EXECUTABLE} -X ${PACKAGENAME}/conf.GitVersion=${GITVERSION}" -o ${EXECUTABLE}
 
 
@@ -36,67 +34,72 @@ ${GOPATH}/bin/protoc-gen-gotag:
 
 
 .PHONY: swagger
-swagger: embed/public_html/api-docs/swagger.json
+swagger: src/embed/public_html/api-docs/swagger.json
 
-embed/public_html/api-docs/swagger.json: tools ${SWAGGERSOURCE}
+src/embed/public_html/api-docs/swagger.json: tools ${SWAGGERSOURCE}
+	@cd src
 	swag init --dir . --generalInfo gorestapi/swagger.go --exclude embed --output embed/public_html/api-docs --outputTypes json
 
 
 .PHONY: mocks
-mocks: tools mocks/MongoCollection.go mocks/DataStore.go
+mocks: tools src/mocks/MongoCollection.go src/mocks/DataStore.go
 
-mocks/MongoCollection.go: store/mongodb/collection.go
+src/mocks/MongoCollection.go: src/store/mongodb/collection.go
+	@cd src
 	mockery --dir ./store/mongodb --name MongoCollection
 
-mocks/DataStore.go: gorestapi/datastore.go
+src/mocks/DataStore.go: src/gorestapi/datastore.go
+	@cd src
 	mockery --dir ./gorestapi --name DataStore
 
 
 .PHONY: proto
-proto: model/db/db.pb.go \
-		model/svc/svc.pb.go
+proto: src/model/db/db.pb.go \
+		src/model/svc/svc.pb.go
 
 .PHONY: proto-clean
 proto-clean:
-	@rm -f model/db/db.pb.go
-	@rm -f model/svc/svc.pb.go
-	@rm -f model/common.pb.go
-	@rm -f model/tagger/tagger.pb.go
+	@rm -f src/model/db/db.pb.go
+	@rm -f src/model/svc/svc.pb.go
+	@rm -f src/model/common.pb.go
+	@rm -f src/model/tagger/tagger.pb.go
 
-model/db/db.pb.go: model/tagger/tagger.pb.go \
-		model/common.pb.go \
-		model/db/db.proto
-	protoc -I /usr/local/include -I . --go_out=:. model/db/db.proto
-	protoc -I /usr/local/include -I . --gotag_out=auto="bson-as-camel+json-as-camel":. model/db/db.proto
-	protoc -I /usr/local/include -I . --gotag_out=xxx="bson+\"-\" json+\"-\"":. model/db/db.proto
+src/model/db/db.pb.go: src/model/tagger/tagger.pb.go \
+		src/model/common.pb.go \
+		src/model/db/db.proto
+	protoc -I /usr/local/include -I . --go_out=:. src/model/db/db.proto
+	protoc -I /usr/local/include -I . --gotag_out=auto="bson-as-camel+json-as-camel":. src/model/db/db.proto
+	protoc -I /usr/local/include -I . --gotag_out=xxx="bson+\"-\" json+\"-\"":. src/model/db/db.proto
 
-model/svc/svc.pb.go: model/tagger/tagger.pb.go \
-		model/common.pb.go \
-		model/svc/svc.proto
-	protoc -I /usr/local/include -I . --go_out=:. model/svc/svc.proto
-	protoc -I /usr/local/include -I . --gotag_out=auto="bson-as-camel+json-as-camel":. model/svc/svc.proto
-	protoc -I /usr/local/include -I . --gotag_out=xxx="bson+\"-\" json+\"-\"":. model/svc/svc.proto
+src/model/svc/svc.pb.go: src/model/tagger/tagger.pb.go \
+		src/model/common.pb.go \
+		src/model/svc/svc.proto
+	protoc -I /usr/local/include -I . --go_out=:. src/model/svc/svc.proto
+	protoc -I /usr/local/include -I . --gotag_out=auto="bson-as-camel+json-as-camel":. src/model/svc/svc.proto
+	protoc -I /usr/local/include -I . --gotag_out=xxx="bson+\"-\" json+\"-\"":. src/model/svc/svc.proto
 
-model/common.pb.go: model/common.proto
-	protoc -I /usr/local/include -I . --go_out=:. model/common.proto
+src/model/common.pb.go: src/model/common.proto
+	protoc -I /usr/local/include -I . --go_out=:. src/model/common.proto
 # TODO without the full package path (e.g. with relative path), wrong import path is generated in the files that import this, but with it the file gets placed in an unexpected place
-	@mv github.com/jqrd/gorestapi-mongo/model/common.pb.go model/common.pb.go
-	@rm -r github.com
+	@mv src/github.com/jqrd/gorestapi-mongo/model/common.pb.go src/model/common.pb.go
+	@rm -r src/github.com
 
-model/tagger/tagger.pb.go: model/tagger/tagger.proto
-	protoc -I /usr/local/include -I . --go_out=:. model/tagger/tagger.proto
+src/model/tagger/tagger.pb.go: src/model/tagger/tagger.proto
+	protoc -I /usr/local/include -I . --go_out=:. src/model/tagger/tagger.proto
 # TODO without the full package path (e.g. with relative path), wrong import path is generated in the files that import this, but with it the file gets placed in an unexpected place
-	@mv github.com/jqrd/gorestapi-mongo/model/tagger/tagger.pb.go model/tagger/tagger.pb.go
-	@rm -r github.com
+	@mv src/github.com/jqrd/gorestapi-mongo/model/tagger/tagger.pb.go src/model/tagger/tagger.pb.go
+	@rm -r src/github.com
 
 
 .PHONY: test
 test: tools mocks
+	@cd src
 	go test -cover ./...
 
 .PHONY: deps
 deps:
 	# Fetching dependancies...
+	@cd src
 	go get -d -v # Adding -u here will break CI
 
 .PHONY: lint
