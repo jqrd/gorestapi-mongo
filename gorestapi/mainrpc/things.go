@@ -64,7 +64,7 @@ func (api *ThingsAPI) Create() http.HandlerFunc {
 		dbThing := &db.Thing{
 			Name:        thing.Name,
 			Description: thing.Description,
-			WidgetIDs:   make([]string, 0, len(thing.Widgets)),
+			WidgetIDs:   make([]string, len(thing.Widgets)),
 		}
 
 		if len(thing.Widgets) > 0 {
@@ -89,11 +89,13 @@ func (api *ThingsAPI) Create() http.HandlerFunc {
 			if len(thing.Widgets) > len(existingWidgets) {
 				newWidgets := make([]*db.Widget, 0, len(thing.Widgets))
 				for _, widget := range thing.Widgets {
-					newWidget := &db.Widget{
-						Name: widget.Name,
-						Type: widget.Type,
+					if _, found := existingWidgetsByName[widget.Name]; !found {
+						newWidget := &db.Widget{
+							Name: widget.Name,
+							Type: widget.Type,
+						}
+						newWidgets = append(newWidgets, newWidget)
 					}
-					newWidgets = append(newWidgets, newWidget)
 				}
 				err := api.s.store.Widgets().InsertMany(ctx, newWidgets)
 				if err != nil {
@@ -221,7 +223,8 @@ func (api *ThingsAPI) Find() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		ctx := r.Context()
-		filter := bson.M{}
+		//filter := bson.M{} // TODO double check this
+		filter := map[string]interface{}{}
 
 		query, err := url.ParseQuery(r.URL.RawQuery)
 		if err != nil {
@@ -278,24 +281,26 @@ func toSvcThing(dbThing *db.Thing, store gorestapi.DataStore, ctx context.Contex
 		Id:          dbThing.Id,
 		Name:        dbThing.Name,
 		Description: dbThing.Description,
-		Widgets:     make([]*svc.ThingWidget, 0, len(dbThing.WidgetIDs)),
+		Widgets:     make([]*svc.ThingWidget, len(dbThing.WidgetIDs)),
 	}
 
-	filter := bson.M{"_id": bson.M{"$in": dbThing.WidgetIDs}}
-	widgets, err := store.Widgets().Find(ctx, filter)
-	if err != nil {
-		return nil, err
-	}
-	widgetsById := make(map[string]*db.Widget)
-	for _, widget := range widgets {
-		widgetsById[widget.Id] = widget
-	}
-	for i, id := range dbThing.WidgetIDs {
-		dbWidget := widgetsById[id]
-		thing.Widgets[i] = &svc.ThingWidget{
-			WidgetId: id,
-			Name:     dbWidget.Name,
-			Type:     dbWidget.Type,
+	if len(dbThing.WidgetIDs) != 0 {
+		filter := bson.M{"_id": bson.M{"$in": dbThing.WidgetIDs}}
+		widgets, err := store.Widgets().Find(ctx, filter)
+		if err != nil {
+			return nil, err
+		}
+		widgetsById := make(map[string]*db.Widget)
+		for _, widget := range widgets {
+			widgetsById[widget.Id] = widget
+		}
+		for i, id := range dbThing.WidgetIDs {
+			dbWidget := widgetsById[id]
+			thing.Widgets[i] = &svc.ThingWidget{
+				WidgetId: id,
+				Name:     dbWidget.Name,
+				Type:     dbWidget.Type,
+			}
 		}
 	}
 

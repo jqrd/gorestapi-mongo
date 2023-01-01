@@ -27,9 +27,9 @@ func Setup(router chi.Router, store gorestapi.DataStore) error {
 	// Base Functions
 	s.router.Route("/api", func(r chi.Router) {
 		r.Post("/things", things.Create())
+		r.Get("/things", things.Find())
 		r.Get("/things/{id}", things.GetByID())
 		r.Delete("/things/{id}", things.DeleteByID())
-		r.Get("/things", things.Find())
 
 		// TODO widgets
 	})

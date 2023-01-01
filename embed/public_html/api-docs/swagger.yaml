@@ -172,7 +172,7 @@ paths:
           description: Internal Error
           schema:
             $ref: '#/definitions/render.ErrResponse'
-      summary: Get ting
+      summary: Get thing
       tags:
       - things
 securityDefinitions:

@@ -116,7 +116,7 @@
                 "tags": [
                     "things"
                 ],
-                "summary": "Get ting",
+                "summary": "Get thing",
                 "operationId": "ThingsAPI.GetByID",
                 "parameters": [
                     {
