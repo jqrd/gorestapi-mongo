@@ -8,9 +8,16 @@ TOOLS := ${GOPATH}/bin/mockery \
 	${GOPATH}/bin/protoc-gen-gotag
 SWAGGERSOURCE = $(wildcard gorestapi/*.go) \
 	$(wildcard gorestapi/mainrpc/*.go)
+GOSOURCE = go.mod \
+	go.sum \
+	$(shell find . -type f -name '*.go') \
+	$(shell find ./embed -type f)
 
-.PHONY: default
-default: ${EXECUTABLE}
+
+${EXECUTABLE}: tools ${GOSOURCE} swagger
+	# Compiling...
+	go build -ldflags "-X ${PACKAGENAME}/conf.Executable=${EXECUTABLE} -X ${PACKAGENAME}/conf.GitVersion=${GITVERSION}" -o ${EXECUTABLE}
+
 
 .PHONY: tools
 tools: ${TOOLS}
@@ -29,13 +36,11 @@ ${GOPATH}/bin/protoc-gen-gotag:
 
 
 .PHONY: swagger
-swagger: tools ${SWAGGERSOURCE}
-	swag init --dir . --generalInfo gorestapi/swagger.go --exclude embed --output embed/public_html/api-docs
-	rm embed/public_html/api-docs/docs.go
-	
+swagger: embed/public_html/api-docs/swagger.json
+
 embed/public_html/api-docs/swagger.json: tools ${SWAGGERSOURCE}
-	swag init --dir . --generalInfo gorestapi/swagger.go --exclude embed --output embed/public_html/api-docs
-	rm embed/public_html/api-docs/docs.go
+	swag init --dir . --generalInfo gorestapi/swagger.go --exclude embed --output embed/public_html/api-docs --outputTypes json
+
 
 .PHONY: mocks
 mocks: tools mocks/MongoCollection.go mocks/DataStore.go
@@ -85,11 +90,6 @@ model/tagger/tagger.pb.go: model/tagger/tagger.proto
 	@rm -r github.com
 
 
-.PHONY: ${EXECUTABLE}
-${EXECUTABLE}: tools embed/public_html/api-docs/swagger.json
-	# Compiling...
-	go build -ldflags "-X ${PACKAGENAME}/conf.Executable=${EXECUTABLE} -X ${PACKAGENAME}/conf.GitVersion=${GITVERSION}" -o ${EXECUTABLE}
-
 .PHONY: test
 test: tools mocks
 	go test -cover ./...
@@ -116,4 +116,3 @@ relocate:
 	@grep -rlI '${PACKAGENAME}' * | xargs -i@ sed -i 's/${ESCAPED_PACKAGENAME}/${ESCAPED_TARGET}/g' @
 	# Complete... 
 	# NOTE: This does not update the git config nor will it update any imports of the root directory of this project.
-
