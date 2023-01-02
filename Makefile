@@ -11,10 +11,9 @@ SWAGGERSOURCE = $(wildcard src/gorestapi/*.go) \
 GOSOURCE = $(shell find ./src -type f)
 
 
-${EXECUTABLE}: tools ${GOSOURCE} swagger
+${EXECUTABLE}: tools proto ${GOSOURCE} swagger
 	# Compiling...
-	@cd src
-	go build -ldflags "-X ${PACKAGENAME}/conf.Executable=${EXECUTABLE} -X ${PACKAGENAME}/conf.GitVersion=${GITVERSION}" -o ${EXECUTABLE}
+	cd src && go build -ldflags "-X ${PACKAGENAME}/conf.Executable=${EXECUTABLE} -X ${PACKAGENAME}/conf.GitVersion=${GITVERSION}" -o ../${EXECUTABLE}
 
 
 .PHONY: tools
@@ -37,20 +36,17 @@ ${GOPATH}/bin/protoc-gen-gotag:
 swagger: src/embed/public_html/api-docs/swagger.json
 
 src/embed/public_html/api-docs/swagger.json: tools ${SWAGGERSOURCE}
-	@cd src
-	swag init --dir . --generalInfo gorestapi/swagger.go --exclude embed --output embed/public_html/api-docs --outputTypes json
+	cd src && swag init --dir . --generalInfo gorestapi/swagger.go --exclude embed --output embed/public_html/api-docs --outputTypes json
 
 
 .PHONY: mocks
 mocks: tools src/mocks/MongoCollection.go src/mocks/DataStore.go
 
 src/mocks/MongoCollection.go: src/store/mongodb/collection.go
-	@cd src
-	mockery --dir ./store/mongodb --name MongoCollection
+	cd src && mockery --dir ./store/mongodb --name MongoCollection
 
 src/mocks/DataStore.go: src/gorestapi/datastore.go
-	@cd src
-	mockery --dir ./gorestapi --name DataStore
+	cd src && mockery --dir ./gorestapi --name DataStore
 
 
 .PHONY: proto
@@ -67,25 +63,25 @@ proto-clean:
 src/model/db/db.pb.go: src/model/tagger/tagger.pb.go \
 		src/model/common.pb.go \
 		src/model/db/db.proto
-	protoc -I /usr/local/include -I . --go_out=:. src/model/db/db.proto
-	protoc -I /usr/local/include -I . --gotag_out=auto="bson-as-camel+json-as-camel":. src/model/db/db.proto
-	protoc -I /usr/local/include -I . --gotag_out=xxx="bson+\"-\" json+\"-\"":. src/model/db/db.proto
+	cd src && protoc -I /usr/local/include -I . --go_out=:. model/db/db.proto
+	cd src && protoc -I /usr/local/include -I . --gotag_out=auto="bson-as-camel+json-as-camel":. model/db/db.proto
+	cd src && protoc -I /usr/local/include -I . --gotag_out=xxx="bson+\"-\" json+\"-\"":. model/db/db.proto
 
 src/model/svc/svc.pb.go: src/model/tagger/tagger.pb.go \
 		src/model/common.pb.go \
 		src/model/svc/svc.proto
-	protoc -I /usr/local/include -I . --go_out=:. src/model/svc/svc.proto
-	protoc -I /usr/local/include -I . --gotag_out=auto="bson-as-camel+json-as-camel":. src/model/svc/svc.proto
-	protoc -I /usr/local/include -I . --gotag_out=xxx="bson+\"-\" json+\"-\"":. src/model/svc/svc.proto
+	cd src && protoc -I /usr/local/include -I . --go_out=:. model/svc/svc.proto
+	cd src && protoc -I /usr/local/include -I . --gotag_out=auto="bson-as-camel+json-as-camel":. model/svc/svc.proto
+	cd src && protoc -I /usr/local/include -I . --gotag_out=xxx="bson+\"-\" json+\"-\"":. model/svc/svc.proto
 
 src/model/common.pb.go: src/model/common.proto
-	protoc -I /usr/local/include -I . --go_out=:. src/model/common.proto
+	cd src && protoc -I /usr/local/include -I . --go_out=:. model/common.proto
 # TODO without the full package path (e.g. with relative path), wrong import path is generated in the files that import this, but with it the file gets placed in an unexpected place
 	@mv src/github.com/jqrd/gorestapi-mongo/model/common.pb.go src/model/common.pb.go
 	@rm -r src/github.com
 
 src/model/tagger/tagger.pb.go: src/model/tagger/tagger.proto
-	protoc -I /usr/local/include -I . --go_out=:. src/model/tagger/tagger.proto
+	cd src && protoc -I /usr/local/include -I . --go_out=:. model/tagger/tagger.proto
 # TODO without the full package path (e.g. with relative path), wrong import path is generated in the files that import this, but with it the file gets placed in an unexpected place
 	@mv src/github.com/jqrd/gorestapi-mongo/model/tagger/tagger.pb.go src/model/tagger/tagger.pb.go
 	@rm -r src/github.com
@@ -93,14 +89,12 @@ src/model/tagger/tagger.pb.go: src/model/tagger/tagger.proto
 
 .PHONY: test
 test: tools mocks
-	@cd src
-	go test -cover ./...
+	cd src && go test -cover ./...
 
 .PHONY: deps
 deps:
 	# Fetching dependancies...
-	@cd src
-	go get -d -v # Adding -u here will break CI
+	cd src && go get -d -v # Adding -u here will break CI
 
 .PHONY: lint
 lint:
