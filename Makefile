@@ -22,7 +22,7 @@ build-docker:
 infra-dev: infra-dev-up
 
 
-${EXECUTABLE}: tools proto ${GOSOURCE} swagger
+${EXECUTABLE}: tools proto mocks ${GOSOURCE} swagger
 	# Compiling...
 	cd src && go build -ldflags "-X ${PACKAGENAME}/conf.Executable=${EXECUTABLE} -X ${PACKAGENAME}/conf.GitVersion=${GITVERSION}" -o ../${EXECUTABLE}
 
