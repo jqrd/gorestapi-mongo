@@ -3,19 +3,26 @@ WORK IN PROGRESS, DO NOT USE :)
 # Base API Example
 
 This API example is a basic framework for a REST API with MongoDB as a database.
-It's a fork of https://github.com/snowzach/gorestapi, which supports Postgres as the database.
+It's a fork of [snowzach/gorestapi](https://github.com/snowzach/gorestapi), which supports Postgres as the database.
 
 ## Requirements
-Protocol Buffers are used to define the db and service schema, and to generate the Go types used for reading/writing data from MongoDB. Install `protoc` following the [install docs](https://grpc.io/docs/protoc-installation/).
+Protocol Buffers are used to define the db and service schema, and to generate the Go types used for reading/writing data from/to MongoDB. Install `protoc` following the [install docs](https://grpc.io/docs/protoc-installation/).
 
-MongoDB -- TODO divide repo into src and infra, add scripts to stand up MongoDB with Docker.
+Docker is required to run MongoDB (and mongo-express for manually inspecting the database).
+With Docker installed, set up the required containers with `make infra-dev`.
 
 Other tools are installed automatically when building (or just run `make tools` to install them up front): `protoc-gen-go`, `protoc-gen-gotag`, `mockery`, `swag`.
 Ensure that `$HOME/go/bin` is in your path for these external tools to work.
 
+
 ## Compiling
 This requires Go 1.19 or better.
 You can clone it anywhere, just run `make` inside the cloned directory to build.
+
+(TODO test again on MacOS)
+
+(TODO Windows support?...)
+
 
 ## Configuration
 The configuration is designed to be specified with environment variables in all caps with underscores instead of periods. 
@@ -60,13 +67,13 @@ LOGGER_LEVEL=debug
 | server.metrics.enabled          | Enable metrics on server endpoints                          | true                    |
 | server.metrics.ignore_paths     | The endpoint prefixes to not capture metrics on             | []string{"/version"}    |
 | ---                             | ---                                                         | ---                     |
-| database.username               | The database username                                       | "postgres"              |
+| (TODO: Many DB settings are not implemented yet)  |||
+| database.username               | The database username                                       | "root"                  |
 | database.password               | The database password                                       | "password"              |
-| database.host                   | Thos hostname for the database                              | "postgres"              |
-| database.port                   | The port for the database                                   | 5432                    |
-| database.database               | The database                                                | "gorestapi"             |
+| database.host                   | Thos hostname for the database                              | "localhost"             |
+| database.port                   | The port for the database                                   | 27017                   |
+| database.database               | The database                                                | "gorestapiDB"           |
 | database.auto_create            | Automatically create database                               | true                    |
-| database.search_path            | Set the search path                                         | ""                      |
 | database.sslmode                | The postgres sslmode to use                                 | "disable"               |
 | database.sslcert                | The postgres sslcert file                                   | ""                      |
 | database.sslkey                 | The postgres sslkey file                                    | ""                      |
@@ -78,22 +85,30 @@ LOGGER_LEVEL=debug
 | database.wipe_confirm           | Wipe the database during start                              | false                   |
 
 
-## Data Storage (TODO reworking for MongoDB)
-Data is stored in a postgres database by default.
+## Data Storage
+Data is stored in a MongoDB database.
+In the dev configuration, data is saved in a local `data` directory, which is mounted into the mongo container.
+
 
 ## Query Logic
-Find requests `GET /api/things` and `GET /api/widgets` uses a url query parser to allow very complex logic including AND, OR and precedence operators. 
-For the documentation on how to use this format see https://github.com/snowzach/queryp
+Find requests like `GET /api/things` and `GET /api/widgets` support a `q` query string JSON argument in the format of a MongoDB filter.
+For the documentation on how to use this format see [query documents](https://www.mongodb.com/docs/manual/tutorial/query-documents/) and [query and projection operators](https://www.mongodb.com/docs/manual/reference/operator/query/) in the the MongoDB docs.
+
 
 ## Swagger Documentation
 When you run the API it has built in Swagger documentation available at `/api/api-docs/` (trailing slash required)
 The documentation is automatically generated.
+
 
 ## TLS/HTTPS
 You can enable https by setting the config option server.tls = true and pointing it to your keyfile and certfile.
 To create a self-signed cert: `openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -keyout server.key -out server.crt`
 It also has the option to automatically generate a development cert every time it runs using the server.devcert option.
 
+
 ## Relocation
+(TODO works on Linux but not on MacOS)
+
 If you want to start with this as boilerplate for your project, you can clone this repo and use the `make relocate` option to rename the package.
-`make relocate TARGET=github.com/myname/mycoolproject`
+
+```make relocate TARGET=github.com/myname/mycoolproject```

@@ -1,0 +1,49 @@
+version: '3.9'
+
+services:
+
+  mongo:
+    image: mongo
+    container_name: ${MONGO_HOST}
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USR}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PWD}
+    ports:
+      - 0.0.0.0:${MONGO_PORT}:${MONGO_PORT}
+    networks:
+      - gorestapi-network
+    volumes:
+      - ./data:/data/db
+
+  mongo-express:
+    image: mongo-express
+    container_name: ${MONGO_EXPRESS_HOST}
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USR}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PWD}
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_USR}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PWD}
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_USR}:${MONGO_PWD}@${MONGO_HOST}:${MONGO_PORT}/
+    ports:
+      - 0.0.0.0:${MONGO_EXPRESS_PORT}:${MONGO_EXPRESS_PORT}
+    networks:
+      - gorestapi-network
+    volumes:
+      - ./wait-for.sh:/wait-for.sh
+    entrypoint:
+      - /bin/sh
+      - /wait-for.sh
+      - mongo:${MONGO_PORT}
+      - -t
+      - "60"
+      - --
+      - tini
+      - --
+      - /docker-entrypoint.sh
+      - mongo-express
+    depends_on:
+      - mongo
+
+networks:
+  gorestapi-network:
+    driver: bridge

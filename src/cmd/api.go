@@ -51,7 +51,7 @@ var (
 			// Version endpoint
 			router.Get("/version", version.GetVersion())
 
-			// ThingRPC
+			// MainRPC
 			if err = mainrpc.Setup(router, db); err != nil {
 				log.Fatalf("Could not setup mainrpc: %v", err)
 			}
@@ -177,15 +177,25 @@ func newDatabase() (gorestapi.DataStore, error) {
 	// 	postgresConfig.QueryLogger = log.NewWrapper(log.Base.Named("store.postgres.query"), zapcore.DebugLevel)
 	// }
 
-	// Create database
+	envConfig, err := conf.GetEnvConfig[mongodb.Config]("Mongo")
+	if err != nil {
+		return nil, err
+	}
+	config.Host = envConfig.Host
+	config.Port = envConfig.Port
+	config.Username = envConfig.Username
+	config.Password = envConfig.Password
+	// TODO other configs from env?
+
+	// Create client
 	client, err := mongodb.New(config)
 	if err != nil {
 		return nil, fmt.Errorf("could not create database client: %w", err)
 	}
 
 	store := gorestapi.NewDataStore(
-		mongodb.Collection[*db.Widget](client, "widgets"),
-		mongodb.Collection[*db.Thing](client, "things"),
+		mongodb.Collection[*db.Widget](client, mongodb.WidgetsCollection),
+		mongodb.Collection[*db.Thing](client, mongodb.ThingsCollection),
 	)
 
 	return store, nil

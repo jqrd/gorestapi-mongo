@@ -4,3 +4,7 @@ bindata.go
 server.crt
 server.key
 local.sh
+src/__debug_bin
+infra/dev/data
+infra/dev/.env
+infra/dev/.env-update

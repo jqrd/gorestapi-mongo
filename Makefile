@@ -11,9 +11,27 @@ SWAGGERSOURCE = $(wildcard src/gorestapi/*.go) \
 GOSOURCE = $(shell find ./src -type f)
 
 
+.PHONY: build
+build: ${EXECUTABLE}
+
+.PHONY: build-docker
+build-docker:
+	# TODO make gorestapi docker image, deploy dev infra, deploy gorestapi container
+
+.PHONY: infra-dev
+infra-dev: infra-dev-up
+
+
 ${EXECUTABLE}: tools proto ${GOSOURCE} swagger
 	# Compiling...
 	cd src && go build -ldflags "-X ${PACKAGENAME}/conf.Executable=${EXECUTABLE} -X ${PACKAGENAME}/conf.GitVersion=${GITVERSION}" -o ../${EXECUTABLE}
+
+
+.PHONY: run
+run: infra/dev/stack.yml
+	$(eval MONGO_U = $(shell grep -oP "(?<=MONGO_INITDB_ROOT_USERNAME: )(.*)" infra/dev/stack.yml))
+	$(eval MONGO_P = $(shell grep -oP "(?<=MONGO_INITDB_ROOT_PASSWORD: )(.*)" infra/dev/stack.yml))
+	Mongo.Username=${MONGO_U} Mongo.Password=${MONGO_P} ${EXECUTABLE} api
 
 
 .PHONY: tools
@@ -93,7 +111,7 @@ test: tools mocks
 
 .PHONY: deps
 deps:
-	# Fetching dependancies...
+	# Fetching dependencies...
 	cd src && go get -d -v # Adding -u here will break CI
 
 .PHONY: lint
@@ -103,6 +121,53 @@ lint:
 .PHONY: hadolint
 hadolint:
 	docker run -it --rm -v ${PWD}/Dockerfile:/Dockerfile hadolint/hadolint:latest hadolint --ignore DL3018 Dockerfile
+
+
+SUDO_DOCKER = $(shell docker ps 2>&1 | grep "permission denied" | wc -c)
+NO_SUDO_DOCKER = 0
+ifeq (${SUDO_DOCKER}, ${NO_SUDO_DOCKER})
+DOCKER = docker
+else
+DOCKER = sudo docker
+endif
+
+.PHONY: which-docker
+which-docker:
+	@echo DOCKER = ${DOCKER}
+
+
+.PHONY: infra-dev-up
+infra-dev-up: infra/dev/docker-compose.yml infra/dev/.env-update
+	[ -d infra/dev/data ] || ( mkdir infra/dev/data && chmod 777 infra/dev/data )
+	cd infra/dev && ${DOCKER} compose up --detach --wait
+
+infra/dev/.env-update: infra/dev/.env
+	# Env file was created/modified, ensuring containers get recreated...
+	cd infra/dev && ${DOCKER} compose rm -s -f -v
+	@touch infra/dev/.env-update
+
+infra/dev/.env:
+	@touch infra/dev/.env
+	$(shell echo MONGO_HOST=mongo >> infra/dev/.env)
+	$(shell echo MONGO_PORT=27017 >> infra/dev/.env)
+	$(shell echo MONGO_USR=root >> infra/dev/.env)
+	$(shell echo MONGO_PWD=$(shell echo mongo $RANDOM | md5sum | head -c 20; echo) >> infra/dev/.env)
+	$(shell echo MONGO_EXPRESS_HOST=mongo_express >> infra/dev/.env)
+	$(shell echo MONGO_EXPRESS_PORT=8081 >> infra/dev/.env)
+	$(shell echo MONGO_EXPRESS_USR=admin >> infra/dev/.env)
+	$(shell echo MONGO_EXPRESS_PWD=$(shell echo express $RANDOM | md5sum | head -c 20; echo) >> infra/dev/.env)
+	# Passwords & other settings generated into env file infra/dev/.env
+
+.PHONY: infra-dev-clean
+infra-dev-clean:
+	cd infra/dev && ${DOCKER} compose rm -s -f -v
+	sudo rm -rf infra/dev/data
+
+
+.PHONY: infra-stage
+infra-stage:
+	#TODO with terraform probably
+
 
 .PHONY: relocate
 relocate:
