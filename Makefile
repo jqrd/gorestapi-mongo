@@ -123,13 +123,7 @@ hadolint:
 	docker run -it --rm -v ${PWD}/Dockerfile:/Dockerfile hadolint/hadolint:latest hadolint --ignore DL3018 Dockerfile
 
 
-SUDO_DOCKER = $(shell docker ps 2>&1 | grep "permission denied" | wc -c | sed 's/ //g')
-NO_SUDO_DOCKER = 0
-ifeq (${SUDO_DOCKER}, ${NO_SUDO_DOCKER})
-DOCKER = docker
-else
-DOCKER = sudo docker
-endif
+DOCKER = $(shell [[ $( docker ps 2>&1 | grep "permission denied" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "docker" || echo "sudo docker" )
 
 .PHONY: which-docker
 which-docker:
