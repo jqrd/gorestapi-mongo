@@ -124,6 +124,7 @@ hadolint:
 
 
 DOCKER = $(shell [[ $( docker ps 2>&1 | grep "permission denied" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "docker" || echo "sudo docker" )
+MD5 = $(shell [[ $( echo "1" | md5sum 2>&1 | grep "command not found" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "md5sum" || echo "md5" )
 
 .PHONY: which-docker
 which-docker:
@@ -145,11 +146,11 @@ infra/dev/.env:
 	$(shell echo MONGO_HOST=mongo >> infra/dev/.env)
 	$(shell echo MONGO_PORT=27017 >> infra/dev/.env)
 	$(shell echo MONGO_USR=root >> infra/dev/.env)
-	$(shell echo MONGO_PWD=$(shell echo mongo $RANDOM | md5sum | head -c 20; echo) >> infra/dev/.env)
+	$(shell echo MONGO_PWD=$(shell echo mongo $RANDOM | ${MD5} | head -c 20; echo) >> infra/dev/.env)
 	$(shell echo MONGO_EXPRESS_HOST=mongo_express >> infra/dev/.env)
 	$(shell echo MONGO_EXPRESS_PORT=8081 >> infra/dev/.env)
 	$(shell echo MONGO_EXPRESS_USR=admin >> infra/dev/.env)
-	$(shell echo MONGO_EXPRESS_PWD=$(shell echo express $RANDOM | md5sum | head -c 20; echo) >> infra/dev/.env)
+	$(shell echo MONGO_EXPRESS_PWD=$(shell echo express $RANDOM | ${MD5} | head -c 20; echo) >> infra/dev/.env)
 	# Passwords & other settings generated into env file infra/dev/.env
 
 .PHONY: infra-dev-clean
