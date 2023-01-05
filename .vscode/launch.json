@@ -24,6 +24,16 @@
       "showLog": true,
       "logOutput": "rpc",
       "trace": "verbose"
+    },
+    {
+      "name": "Attach to running local server",
+      "type": "go",
+      "request": "attach",
+      "mode": "local",
+      "cwd": "${workspaceFolder}/src",
+      "showLog": true,
+      "logOutput": "rpc",
+      "trace": "verbose"
     }
   ],
   "inputs": [

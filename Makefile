@@ -42,10 +42,15 @@ ${EXECUTABLE}: tools proto mocks ${GOSOURCE} swagger
 
 
 .PHONY: run
-run: infra/dev/stack.yml
-	$(eval MONGO_U = $(shell grep -oP "(?<=MONGO_INITDB_ROOT_USERNAME: )(.*)" infra/dev/stack.yml))
-	$(eval MONGO_P = $(shell grep -oP "(?<=MONGO_INITDB_ROOT_PASSWORD: )(.*)" infra/dev/stack.yml))
-	Mongo.Username=${MONGO_U} Mongo.Password=${MONGO_P} ${EXECUTABLE} api
+run: ${EXECUTABLE} infra-dev-up
+	$(eval $(shell grep -Eoh "MONGO_PORT=.*" infra/dev/.env))
+	$(eval $(shell grep -Eoh "MONGO_USR=.*" infra/dev/.env))
+	$(eval $(shell grep -Eoh "MONGO_PWD=.*" infra/dev/.env))
+	$(shell env "Mongo.Host=localhost" \
+		env "Mongo.Port=${MONGO_PORT}" \
+		env "Mongo.Username=${MONGO_USR}" \
+		env "Mongo.Password=${MONGO_PWD}" \
+		./${EXECUTABLE} api )
 
 
 .PHONY: tools
@@ -162,7 +167,7 @@ infra/dev/.env:
 .PHONY: infra-dev-clean
 infra-dev-clean:
 	cd infra/dev && ${DOCKER} compose rm -s -f -v
-	rm -rf infra/dev/data
+	sudo rm -rf infra/dev/data
 
 
 .PHONY: infra-stage
