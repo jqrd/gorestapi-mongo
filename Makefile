@@ -13,8 +13,20 @@ SWAGGERSOURCE = $(wildcard src/gorestapi/*.go) \
 GOSOURCE = $(shell find ./src -type f)
 
 
+
+DOCKER = $(shell [[ $(shell docker ps 2>&1 | grep "permission denied" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "docker" || echo "sudo docker" )
+MD5 = $(shell [[ $(shell echo "1" | md5sum 2>&1 | grep "command not found" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "md5sum" || echo "md5" )
+
+
 .PHONY: build
 build: ${EXECUTABLE}
+
+
+.PHONY: which
+which:
+	@echo "DOCKER =  ${DOCKER}"
+	@echo "MD5 =     ${MD5}"
+
 
 .PHONY: build-docker
 build-docker:
@@ -123,15 +135,6 @@ lint:
 .PHONY: hadolint
 hadolint:
 	docker run -it --rm -v ${PWD}/Dockerfile:/Dockerfile hadolint/hadolint:latest hadolint --ignore DL3018 Dockerfile
-
-
-DOCKER = $(shell [[ $(shell docker ps 2>&1 | grep "permission denied" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "docker" || echo "sudo docker" )
-MD5 = $(shell [[ $(shell echo "1" | md5sum 2>&1 | grep "command not found" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "md5sum" || echo "md5" )
-
-.PHONY: which
-which:
-	@echo "DOCKER =  ${DOCKER}"
-	@echo "MD5 =     ${MD5}"
 
 
 .PHONY: infra-dev-up
