@@ -162,7 +162,7 @@ infra/dev/.env:
 .PHONY: infra-dev-clean
 infra-dev-clean:
 	cd infra/dev && ${DOCKER} compose rm -s -f -v
-	sudo rm -rf infra/dev/data
+	rm -rf infra/dev/data
 
 
 .PHONY: infra-stage
