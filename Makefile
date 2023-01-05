@@ -8,12 +8,13 @@ TOOLS := ${GOPATH}/bin/mockery \
 	${GOPATH}/bin/swag \
 	${GOPATH}/bin/protoc-gen-go \
 	${GOPATH}/bin/protoc-gen-gotag
-SWAGGERSOURCE = $(wildcard src/gorestapi/*.go) \
+SWAGGERSOURCE := $(wildcard src/gorestapi/*.go) \
 	$(wildcard src/gorestapi/mainrpc/*.go)
-GOSOURCE = $(shell find ./src -type f)
+GOSOURCE := $(shell find ./src -type f)
 
-DOCKER = $(shell [[ $(shell docker ps 2>&1 | grep "permission denied" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "docker" || echo "sudo docker" )
-MD5 = $(shell [[ $(shell echo "1" | md5sum 2>&1 | grep "command not found" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "md5sum" || echo "md5" )
+DOCKER := $(shell [[ $(shell docker ps 2>&1 | grep "permission denied" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "docker" || echo "sudo docker" )
+MD5 := $(shell [[ $(shell echo "1" | md5sum 2>&1 | grep "command not found" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "md5sum" || echo "md5" )
+SED := $(shell [[ $(shell sed --help 2>&1 | grep -F -- "-i[SUFFIX]" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "sed -I ''" || echo "sed -i" )
 
 
 .PHONY: build
@@ -24,6 +25,7 @@ build: ${EXECUTABLE}
 which:
 	@echo "DOCKER =  ${DOCKER}"
 	@echo "MD5 =     ${MD5}"
+	@echo "SED =     ${SED}"
 
 
 .PHONY: build-docker
@@ -107,14 +109,14 @@ src/model/svc/svc.pb.go: src/model/tagger/tagger.pb.go \
 src/model/common.pb.go: src/model/common.proto
 	cd src && protoc -I /usr/local/include -I . --go_out=:. model/common.proto
 # TODO without the full package path (e.g. with relative path), wrong import path is generated in the files that import this, but with it the file gets placed in an unexpected place
-	@mv src/github.com/jqrd/gorestapi-mongo/model/common.pb.go src/model/common.pb.go
-	@rm -r src/github.com
+	@mv src/${PACKAGENAME}/model/common.pb.go src/model/common.pb.go
+	@rm -r src/$(shell echo "${PACKAGENAME}" | grep -Eoh "^[^/$$]+")
 
 src/model/tagger/tagger.pb.go: src/model/tagger/tagger.proto
 	cd src && protoc -I /usr/local/include -I . --go_out=:. model/tagger/tagger.proto
 # TODO without the full package path (e.g. with relative path), wrong import path is generated in the files that import this, but with it the file gets placed in an unexpected place
-	@mv src/github.com/jqrd/gorestapi-mongo/model/tagger/tagger.pb.go src/model/tagger/tagger.pb.go
-	@rm -r src/github.com
+	@mv src/${PACKAGENAME}/model/tagger/tagger.pb.go src/model/tagger/tagger.pb.go
+	@rm -r src/$(shell echo "${PACKAGENAME}" | grep -Eoh "^[^/$$]+")
 
 
 .PHONY: test
