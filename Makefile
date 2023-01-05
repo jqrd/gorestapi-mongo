@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 EXECUTABLE := gorestapicmd
 GITVERSION := $(shell git describe --dirty --always --tags --long)
 GOPATH ?= ${HOME}/go
@@ -123,12 +125,13 @@ hadolint:
 	docker run -it --rm -v ${PWD}/Dockerfile:/Dockerfile hadolint/hadolint:latest hadolint --ignore DL3018 Dockerfile
 
 
-DOCKER = $(shell [[ $( docker ps 2>&1 | grep "permission denied" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "docker" || echo "sudo docker" )
-MD5 = $(shell [[ $( echo "1" | md5sum 2>&1 | grep "command not found" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "md5sum" || echo "md5" )
+DOCKER = $(shell [[ $(shell docker ps 2>&1 | grep "permission denied" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "docker" || echo "sudo docker" )
+MD5 = $(shell [[ $(shell echo "1" | md5sum 2>&1 | grep "command not found" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "md5sum" || echo "md5" )
 
-.PHONY: which-docker
-which-docker:
-	@echo DOCKER = ${DOCKER}
+.PHONY: which
+which:
+	@echo "DOCKER =  ${DOCKER}"
+	@echo "MD5 =     ${MD5}"
 
 
 .PHONY: infra-dev-up
