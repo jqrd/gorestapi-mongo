@@ -12,8 +12,6 @@ SWAGGERSOURCE = $(wildcard src/gorestapi/*.go) \
 	$(wildcard src/gorestapi/mainrpc/*.go)
 GOSOURCE = $(shell find ./src -type f)
 
-
-
 DOCKER = $(shell [[ $(shell docker ps 2>&1 | grep "permission denied" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "docker" || echo "sudo docker" )
 MD5 = $(shell [[ $(shell echo "1" | md5sum 2>&1 | grep "command not found" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "md5sum" || echo "md5" )
 
