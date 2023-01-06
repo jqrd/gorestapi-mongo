@@ -3,14 +3,17 @@
 ARG EXECUTABLE=gorestapicmd
 ARG GIT_VERSION=unknown
 
+# debian biullseye is on an older libc that forces lower version of protoc
+# FROM golang:1.19.4-bullseye as distro
+# RUN apt-get update \
+#  && DEBIAN_FRONTEND=noninteractive \
+#       apt-get install --no-install-recommends --assume-yes \
+#       protobuf-compiler libprotobuf-dev \
+#  && rm -rf /var/lib/apt/lists/*
 
-FROM golang:1.19.4-bullseye as distro
 
-RUN apt-get update \
- && DEBIAN_FRONTEND=noninteractive \
-      apt-get install --no-install-recommends --assume-yes \
-      protobuf-compiler libprotobuf-dev \
- && rm -rf /var/lib/apt/lists/*
+FROM golang:1.19.4-alpine3.17 as distro
+RUN apk add --no-cache bash make protoc protobuf-dev
 
 
 FROM distro as base
