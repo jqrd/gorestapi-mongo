@@ -14,13 +14,19 @@ require (
 	github.com/rs/xid v1.4.0
 	github.com/snowzach/certtools v1.0.2
 	github.com/spf13/cobra v1.6.1
+	github.com/srikrsna/protoc-gen-gotag v0.6.2
 	github.com/stretchr/testify v1.8.1
 	go.mongodb.org/mongo-driver v1.11.1
 	go.uber.org/zap v1.24.0
 	google.golang.org/protobuf v1.28.1
 )
 
-require github.com/golang/protobuf v1.5.2 // indirect
+require (
+	github.com/fatih/structtag v1.2.0 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/lyft/protoc-gen-star v0.5.3 // indirect
+	github.com/spf13/afero v1.5.1 // indirect
+)
 
 require (
 	github.com/ajg/form v1.5.1 // indirect
