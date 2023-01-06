@@ -1,27 +1,30 @@
 SHELL := /bin/bash
 GOPATH ?= ${HOME}/go
 
-PROTOC_MIN_VERSION := 3.18.1
 
 EXECUTABLE := gorestapicmd
 GIT_VERSION := $(shell git describe --dirty --always --tags --long)
 PACKAGE_NAME := $(shell cd src && go list -m -f '{{.Path}}')
 CONTAINER_NAME := $(shell echo "${PACKAGE_NAME}" | grep -Eo '(^|/)[^/]+$$' | sed s!/!!)
-TOOLS := ${GOPATH}/bin/mockery \
-	${GOPATH}/bin/swag \
-	${GOPATH}/bin/protoc-gen-go \
-	${GOPATH}/bin/protoc-gen-gotag
-SWAGGER_SOURCE := $(wildcard src/gorestapi/*.go) \
-	$(wildcard src/gorestapi/mainrpc/*.go)
-GO_SOURCE := $(shell find ./src -type f)
 
+# go tools:
+MOCKERY := ${GOPATH}/bin/mockery
+SWAG :=	${GOPATH}/bin/swag
+PROTOC_GEN_GO := ${GOPATH}/bin/protoc-gen-go
+PROTOC_GEN_GOTAG := ${GOPATH}/bin/protoc-gen-gotag
+
+# external tools:
+PROTOC := $(if $(shell which protoc),$(shell which protoc),"protoc_not_found")
+PROTOC_MIN_VERSION := 3.18.1
+
+# env-dependent tools:
 DOCKER := $(shell [[ $(shell docker ps 2>&1 | grep "permission denied" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "docker" || echo "sudo docker" )
 MD5 := $(shell [[ $(shell echo "1" | md5sum 2>&1 | grep "command not found" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "md5sum" || echo "md5" )
 SED := $(shell [[ $(shell sed --help 2>&1 | grep -F -- "-i[SUFFIX]" | wc -c | sed 's/ //g' ) -eq 0 ]] && echo "sed -I ''" || echo "sed -i" )
 
 
 .PHONY: build
-build: ${EXECUTABLE}
+build: proto mocks swagger ${EXECUTABLE}
 
 .PHONY: dev-infra
 dev-infra: dev-infra-up
@@ -35,18 +38,15 @@ clean: dev-docker-stop dev-infra-clean proto-clean mocks-clean swagger-clean ${E
 
 .PHONY: which
 which:
-	@echo "DOCKER =  ${DOCKER}"
-	@echo "MD5 =     ${MD5}"
-	@echo "SED =     ${SED}"
+	@echo "MD5              =  ${MD5}"
+	@echo "SED              =  ${SED}"
+	@echo "MOCKERY          =  ${MOCKERY}"
+	@echo "SWAG             =  ${SWAG}"
+	@echo "PROTOC           =  ${PROTOC}"
+	@echo "PROTOC_GEN_GO    =  ${PROTOC_GEN_GO}"
+	@echo "PROTOC_GEN_GOTAG =  ${PROTOC_GEN_GOTAG}"
+	@echo "DOCKER           =  ${DOCKER}"
 
-
-${EXECUTABLE}: tools proto mocks ${GO_SOURCE} swagger
-	# Compiling...
-	cd src && go build -ldflags "-X ${PACKAGE_NAME}/conf.Executable=${EXECUTABLE} -X ${PACKAGE_NAME}/conf.GitVersion=${GIT_VERSION}" -o ../${EXECUTABLE}
-
-PHONY: ${EXECUTABLE}-clean
-${EXECUTABLE}-clean:
-	rm -f ${EXECUTABLE}
 
 .PHONY: run
 run: ${EXECUTABLE} dev-infra-up
@@ -59,54 +59,65 @@ run: ${EXECUTABLE} dev-infra-up
 		env "Mongo.Password=${MONGO_PWD}" \
 		./${EXECUTABLE} api )
 
-
-.PHONY: tools
-tools: ${TOOLS}
-
-${GOPATH}/bin/mockery:
+# Tools install/check
+${MOCKERY}:
 	cd src && go install github.com/vektra/mockery/v3@v3.0.0-alpha.0
-
-${GOPATH}/bin/swag:
+${SWAG}:
 	cd src && go install github.com/swaggo/swag/cmd/swag@latest
-
-${GOPATH}/bin/protoc-gen-go:
+${PROTOC_GEN_GO}:
 	cd src && go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-
-${GOPATH}/bin/protoc-gen-gotag:
+${PROTOC_GEN_GOTAG}:
 	cd src && go install github.com/srikrsna/protoc-gen-gotag
+${PROTOC}:
+	@echo "Protoc not found, please install protoc." && exit 1
 
+
+SWAGGER_OUT := src/embed/public_html/api-docs/swagger.json
 
 .PHONY: swagger
-swagger: src/embed/public_html/api-docs/swagger.json
+swagger: ${SWAGGER_OUT}
 
 .PHONY: swagger-clean
 swagger-clean:
 	rm -f src/embed/public_html/api-docs/swagger.json
 
-src/embed/public_html/api-docs/swagger.json: tools ${SWAGGER_SOURCE}
-	cd src && swag init --dir . --generalInfo gorestapi/swagger.go --exclude embed --output embed/public_html/api-docs --outputTypes json
+src/embed/public_html/api-docs/swagger.json: .EXTRA_PREREQS = ${SWAG}
+src/embed/public_html/api-docs/swagger.json: $(wildcard src/gorestapi/*.go) \
+		$(wildcard src/gorestapi/mainrpc/*.go)
+	cd src && swag init --dir . \
+		--generalInfo gorestapi/swagger.go \
+		--exclude embed \
+		--output embed/public_html/api-docs \
+		--outputTypes json
 
+
+MOCKS_OUT := src/mocks/MongoCollection.go \
+	src/mocks/DataStore.go
 
 .PHONY: mocks
-mocks: tools src/mocks/MongoCollection.go src/mocks/DataStore.go
+mocks: ${MOCKS_OUT}
 
 .PHONY: mocks-clean
 mocks-clean:
 	rm -f src/mocks/MongoCollection.go src/mocks/DataStore.go
 
+src/mocks/MongoCollection.go: .EXTRA_PREREQS = ${MOCKERY}
 src/mocks/MongoCollection.go: src/store/mongodb/collection.go
 	cd src && mockery --dir ./store/mongodb --name MongoCollection
 
+src/mocks/DataStore.go: .EXTRA_PREREQS = ${MOCKERY}
 src/mocks/DataStore.go: src/gorestapi/datastore.go
 	cd src && mockery --dir ./gorestapi --name DataStore
 
 
-.PHONY: proto
-proto: protoc-check-version \
-		src/model/db/db.pb.go \
+PROTO_OUT := src/model/db/db.pb.go \
 		src/model/svc/svc.pb.go
 
+.PHONY: proto
+proto: protoc-check-version ${PROTO_OUT}
+
 .PHONY: protoc-check-version
+protoc-check-version: .EXTRA_PREREQS = ${PROTOC}
 protoc-check-version:
 	$(eval PROTOC_VERSION=$(shell protoc --version | sed 's/.* //'))
 	@(echo "${PROTOC_MIN_VERSION}" && echo "${PROTOC_VERSION}") | (sort -V -c > /dev/null 2>&1 && echo "You have protoc ${PROTOC_VERSION} >= min version ${PROTOC_MIN_VERSION} ✓") || (echo "Minimum required version of protoc is ${PROTOC_MIN_VERSION}, please upgrade (you have ${PROTOC_VERSION})"; echo "(older ones reference deprecated protobuf package from github.com instead of google.golang.org)" && exit 1)
@@ -118,6 +129,7 @@ proto-clean:
 	@rm -f src/model/common.pb.go
 	@rm -f src/model/tagger/tagger.pb.go
 
+src/model/db/db.pb.go: .EXTRA_PREREQS = ${PROTOC}
 src/model/db/db.pb.go: src/model/tagger/tagger.pb.go \
 		src/model/common.pb.go \
 		src/model/db/db.proto
@@ -125,6 +137,7 @@ src/model/db/db.pb.go: src/model/tagger/tagger.pb.go \
 	cd src && protoc -I /usr/local/include -I . --gotag_out=auto="bson-as-camel+json-as-camel":. model/db/db.proto
 	cd src && protoc -I /usr/local/include -I . --gotag_out=xxx="bson+\"-\" json+\"-\"":. model/db/db.proto
 
+src/model/svc/svc.pb.go: .EXTRA_PREREQS = ${PROTOC}
 src/model/svc/svc.pb.go: src/model/tagger/tagger.pb.go \
 		src/model/common.pb.go \
 		src/model/svc/svc.proto
@@ -132,12 +145,14 @@ src/model/svc/svc.pb.go: src/model/tagger/tagger.pb.go \
 	cd src && protoc -I /usr/local/include -I . --gotag_out=auto="bson-as-camel+json-as-camel":. model/svc/svc.proto
 	cd src && protoc -I /usr/local/include -I . --gotag_out=xxx="bson+\"-\" json+\"-\"":. model/svc/svc.proto
 
+src/model/common.pb.go: .EXTRA_PREREQS = ${PROTOC}
 src/model/common.pb.go: src/model/common.proto
 	cd src && protoc -I /usr/local/include -I . --go_out=:. model/common.proto
 # TODO without the full package path (e.g. with relative path), wrong import path is generated in the files that import this, but with it the file gets placed in an unexpected place
 	@mv src/${PACKAGE_NAME}/model/common.pb.go src/model/common.pb.go
 	@rm -r src/$(shell echo "${PACKAGE_NAME}" | grep -Eoh "^[^/$$]+")
 
+src/model/tagger/tagger.pb.go: .EXTRA_PREREQS = ${PROTOC}
 src/model/tagger/tagger.pb.go: src/model/tagger/tagger.proto
 	cd src && protoc -I /usr/local/include -I . --go_out=:. model/tagger/tagger.proto
 # TODO without the full package path (e.g. with relative path), wrong import path is generated in the files that import this, but with it the file gets placed in an unexpected place
@@ -145,8 +160,26 @@ src/model/tagger/tagger.pb.go: src/model/tagger/tagger.proto
 	@rm -r src/$(shell echo "${PACKAGE_NAME}" | grep -Eoh "^[^/$$]+")
 
 
+${EXECUTABLE}: $(shell find ./src -type f) \
+		${PROTO_OUT} \
+		${MOCKS_OUT} \
+		${SWAGGER_OUT}
+	# Compiling...
+	echo proto deps = ${PROTO_OUT}
+	echo mocks deps = ${MOCKS_OUT}
+	echo swagger deps = ${SWAGGER_OUT}
+	cd src && go build \
+		-ldflags "-X ${PACKAGE_NAME}/conf.Executable=${EXECUTABLE} \
+		          -X ${PACKAGE_NAME}/conf.GitVersion=${GIT_VERSION}" \
+		-o ../${EXECUTABLE}
+
+PHONY: ${EXECUTABLE}-clean
+${EXECUTABLE}-clean:
+	rm -f ${EXECUTABLE}
+
+
 .PHONY: test
-test: tools mocks
+test: ${EXECUTABLE}
 	cd src && go test -cover ./...
 
 .PHONY: deps
