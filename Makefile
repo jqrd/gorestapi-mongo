@@ -1,6 +1,8 @@
 SHELL := /bin/bash
 GOPATH ?= ${HOME}/go
 
+PROTOC_MIN_VERSION := 3.18.1
+
 EXECUTABLE := gorestapicmd
 GIT_VERSION := $(shell git describe --dirty --always --tags --long)
 PACKAGE_NAME := $(shell cd src && go list -m -f '{{.Path}}')
@@ -27,6 +29,9 @@ dev-infra: dev-infra-up
 .PHONY: run-docker
 run-docker: dev-docker-run
 
+.PHONY: clean
+clean: dev-docker-stop dev-infra-clean proto-clean mocks-clean swagger-clean ${EXECUTABLE}-clean
+
 
 .PHONY: which
 which:
@@ -39,6 +44,9 @@ ${EXECUTABLE}: tools proto mocks ${GO_SOURCE} swagger
 	# Compiling...
 	cd src && go build -ldflags "-X ${PACKAGE_NAME}/conf.Executable=${EXECUTABLE} -X ${PACKAGE_NAME}/conf.GitVersion=${GIT_VERSION}" -o ../${EXECUTABLE}
 
+PHONY: ${EXECUTABLE}-clean
+${EXECUTABLE}-clean:
+	rm -f ${EXECUTABLE}
 
 .PHONY: run
 run: ${EXECUTABLE} dev-infra-up
@@ -71,12 +79,20 @@ ${GOPATH}/bin/protoc-gen-gotag:
 .PHONY: swagger
 swagger: src/embed/public_html/api-docs/swagger.json
 
+.PHONY: swagger-clean
+swagger-clean:
+	rm -f src/embed/public_html/api-docs/swagger.json
+
 src/embed/public_html/api-docs/swagger.json: tools ${SWAGGER_SOURCE}
 	cd src && swag init --dir . --generalInfo gorestapi/swagger.go --exclude embed --output embed/public_html/api-docs --outputTypes json
 
 
 .PHONY: mocks
 mocks: tools src/mocks/MongoCollection.go src/mocks/DataStore.go
+
+.PHONY: mocks-clean
+mocks-clean:
+	rm -f src/mocks/MongoCollection.go src/mocks/DataStore.go
 
 src/mocks/MongoCollection.go: src/store/mongodb/collection.go
 	cd src && mockery --dir ./store/mongodb --name MongoCollection
@@ -86,8 +102,14 @@ src/mocks/DataStore.go: src/gorestapi/datastore.go
 
 
 .PHONY: proto
-proto: src/model/db/db.pb.go \
+proto: protoc-check-version \
+		src/model/db/db.pb.go \
 		src/model/svc/svc.pb.go
+
+.PHONY: protoc-check-version
+protoc-check-version:
+	$(eval PROTOC_VERSION=$(shell protoc --version | sed 's/.* //'))
+	@(echo "${PROTOC_MIN_VERSION}" && echo "${PROTOC_VERSION}") | (sort -V -c > /dev/null 2>&1 && echo "You have protoc ${PROTOC_VERSION} >= min version ${PROTOC_MIN_VERSION} ✓") || (echo "Minimum required version of protoc is ${PROTOC_MIN_VERSION}, please upgrade (you have ${PROTOC_VERSION})"; echo "(older ones reference deprecated protobuf package from github.com instead of google.golang.org)" && exit 1)
 
 .PHONY: proto-clean
 proto-clean:
@@ -172,6 +194,12 @@ dev-infra-clean:
 	cd infra/dev && ${DOCKER} compose rm -s -f -v
 #	${DOCKER} secret rm MONGO_USR MONGO_PWD || true
 	[ -d infra/dev/data ] && sudo rm -rf infra/dev/data || true
+	# `make dev-infra-clean` not cleaning infra/dev/.env and infra/dev/.env-update to keep generated passwords.
+	# Use `make dev-infra-clean-env` to clean them.
+
+.PHONY: dev-infra-clean-env
+dev-infra-clean-env:
+	rm -f infra/dev/.env infra/dev/.env-update
 
 .PHONY: dev-docker-build
 dev-docker-build: dev-infra-clean

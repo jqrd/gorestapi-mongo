@@ -9,7 +9,7 @@ It's a fork of [snowzach/gorestapi](https://github.com/snowzach/gorestapi), whic
 Protocol Buffers are used to define the db and service schema, and to generate the Go types used for reading/writing data from/to MongoDB. Install `protoc` following the [install docs](https://grpc.io/docs/protoc-installation/).
 
 Docker is required to run MongoDB (and mongo-express for manually inspecting the database).
-With Docker installed, set up the required containers with `make infra-dev`.
+With Docker installed, set up the required containers with `make dev-infra`.
 
 Other tools are installed automatically when building (or just run `make tools` to install them up front): `protoc-gen-go`, `protoc-gen-gotag`, `mockery`, `swag`.
 Ensure that `$HOME/go/bin` is in your path for these external tools to work.
