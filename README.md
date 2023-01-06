@@ -14,14 +14,17 @@ With Docker installed, set up the required containers with `make infra-dev`.
 Other tools are installed automatically when building (or just run `make tools` to install them up front): `protoc-gen-go`, `protoc-gen-gotag`, `mockery`, `swag`.
 Ensure that `$HOME/go/bin` is in your path for these external tools to work.
 
+> **Windows support**: sorry, build / infra scripts only works on Linux and MacOS for now.
+
 
 ## Compiling
 This requires Go 1.19 or better.
+
 You can clone it anywhere, just run `make` inside the cloned directory to build.
 
-(TODO test again on MacOS)
+To run the locally built binary, you can use `make run`. That will in turn use `make dev-infra-up` to deploy Mongo and Mongo-Express containers. There's also a launch configuration for VS Code.
 
-(TODO Windows support?...)
+To build and run from a container, use `make build-docker`.
 
 
 ## Configuration
@@ -107,8 +110,6 @@ It also has the option to automatically generate a development cert every time i
 
 
 ## Relocation
-(TODO works on Linux but not on MacOS)
-
 If you want to start with this as boilerplate for your project, you can clone this repo and use the `make relocate` option to rename the package.
 
 ```make relocate TARGET=github.com/myname/mycoolproject```

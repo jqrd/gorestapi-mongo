@@ -29,7 +29,7 @@ services:
     networks:
       - gorestapi-network
     volumes:
-      - ./wait-for.sh:/wait-for.sh
+      - ../common/wait-for.sh:/wait-for.sh
     entrypoint:
       - /bin/sh
       - /wait-for.sh

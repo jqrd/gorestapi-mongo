@@ -2,6 +2,9 @@ module github.com/jqrd/gorestapi-mongo
 
 go 1.19
 
+// TODO seems like import google/protobuf/descriptor.proto uses an old protobuf package
+// go: module github.com/golang/protobuf is deprecated: Use the "google.golang.org/protobuf" module instead.
+
 require (
 	github.com/blendle/zapdriver v1.3.1
 	github.com/gavv/httpexpect/v2 v2.8.0
@@ -19,6 +22,13 @@ require (
 	go.mongodb.org/mongo-driver v1.11.1
 	go.uber.org/zap v1.21.0
 	google.golang.org/protobuf v1.28.0
+)
+
+require (
+	github.com/fatih/structtag v1.2.0 // indirect
+	github.com/lyft/protoc-gen-star v0.5.3 // indirect
+	github.com/spf13/afero v1.5.1 // indirect
+	github.com/srikrsna/protoc-gen-gotag v0.6.2 // indirect
 )
 
 require (
