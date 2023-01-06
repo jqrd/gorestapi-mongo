@@ -24,7 +24,7 @@ You can clone it anywhere, just run `make` inside the cloned directory to build.
 
 To run the locally built binary, you can use `make run`. That will in turn use `make dev-infra-up` to deploy Mongo and Mongo-Express containers. There's also a launch configuration for VS Code.
 
-To build and run from a container, use `make build-docker`.
+To build and run from a container, use `make run-docker`.
 
 
 ## Configuration

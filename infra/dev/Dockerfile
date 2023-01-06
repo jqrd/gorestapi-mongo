@@ -4,7 +4,16 @@ ARG EXECUTABLE=gorestapicmd
 ARG GIT_VERSION=unknown
 
 
-FROM golang:1.19.4-bullseye as base
+FROM golang:1.19.4-bullseye as distro
+
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive \
+      apt-get install --no-install-recommends --assume-yes \
+      protobuf-compiler libprotobuf-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+
+FROM distro as base
 
 WORKDIR /app/src
 
@@ -24,7 +33,12 @@ WORKDIR /app
 COPY ./Makefile ./Makefile
 COPY ./src ./src
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make build EXECUTABLE=$EXECUTABLE GIT_VERSION=$GIT_VERSION
+ENV GOOS=linux
+ENV GOARCH=amd64
+ENV PATH=$GOPATH/bin/${GOOS}_${GOARCH}:$PATH
+
+RUN CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH make build EXECUTABLE=$EXECUTABLE GIT_VERSION=$GIT_VERSION
+
 
 FROM gcr.io/distroless/static-debian11
 ARG EXECUTABLE

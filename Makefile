@@ -4,7 +4,7 @@ GOPATH ?= ${HOME}/go
 EXECUTABLE := gorestapicmd
 GIT_VERSION := $(shell git describe --dirty --always --tags --long)
 PACKAGE_NAME := $(shell cd src && go list -m -f '{{.Path}}')
-CONTAINER_NAME := $(shell echo "${PACKAGE_NAME}" | grep -Eo "(^|/)[^/]+$$" | sed s#/##)
+CONTAINER_NAME := $(shell echo "${PACKAGE_NAME}" | grep -Eo '(^|/)[^/]+$$' | sed s!/!!)
 TOOLS := ${GOPATH}/bin/mockery \
 	${GOPATH}/bin/swag \
 	${GOPATH}/bin/protoc-gen-go \
@@ -24,8 +24,8 @@ build: ${EXECUTABLE}
 .PHONY: dev-infra
 dev-infra: dev-infra-up
 
-.PHONY: build-docker
-build-docker: dev-docker-build
+.PHONY: run-docker
+run-docker: dev-docker-run
 
 
 .PHONY: which
@@ -171,7 +171,7 @@ infra/dev/.env:
 dev-infra-clean:
 	cd infra/dev && ${DOCKER} compose rm -s -f -v
 #	${DOCKER} secret rm MONGO_USR MONGO_PWD || true
-	sudo rm -rf infra/dev/data
+	[ -d infra/dev/data ] && sudo rm -rf infra/dev/data || true
 
 .PHONY: dev-docker-build
 dev-docker-build: dev-infra-clean
