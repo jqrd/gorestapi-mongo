@@ -140,6 +140,7 @@ proto: ${PROTOC_CHECK_VERSION} ${PROTO_OUT}
 ${PROTOC_CHECK_VERSION}: ${PROTOC}
 	$(eval PROTOC_VERSION=$(shell protoc --version | sed 's/.* //'))
 	@(echo "${PROTOC_MIN_VERSION}" && echo "${PROTOC_VERSION}") | (sort -V -c > /dev/null 2>&1 && echo "You have protoc ${PROTOC_VERSION} >= min version ${PROTOC_MIN_VERSION} ✓") || (echo "⛔️ minimum required version of protoc is ${PROTOC_MIN_VERSION}, please upgrade (you have ${PROTOC_VERSION})"; echo "(older ones reference deprecated protobuf package from github.com instead of google.golang.org)" && exit 1)
+	@mkdir -p $(shell dirname ${PROTOC_CHECK_VERSION})
 	@echo "${PROTOC_VERSION}" > ${PROTOC_CHECK_VERSION}
 
 .PHONY: proto-clean
@@ -149,32 +150,34 @@ proto-clean:
 	@rm -f src/model/common.pb.go
 	@rm -f src/model/tagger/tagger.pb.go
 
-src/model/db/db.pb.go: .EXTRA_PREREQS = ${PROTOC_CHECK_VERSION}
+PROTOC_INCLUDE := -I /usr/include -I /usr/local/include -I .
+
+src/model/db/db.pb.go: .EXTRA_PREREQS = ${PROTOC_CHECK_VERSION} ${PROTOC_GEN_GO} ${PROTOC_GEN_GOTAG}
 src/model/db/db.pb.go: src/model/tagger/tagger.pb.go \
 		src/model/common.pb.go \
 		src/model/db/db.proto
-	cd src && protoc -I /usr/local/include -I . --go_out=:. model/db/db.proto
-	cd src && protoc -I /usr/local/include -I . --gotag_out=auto="bson-as-camel+json-as-camel":. model/db/db.proto
-	cd src && protoc -I /usr/local/include -I . --gotag_out=xxx="bson+\"-\" json+\"-\"":. model/db/db.proto
+	cd src && protoc ${PROTOC_INCLUDE} --go_out=:. model/db/db.proto
+	cd src && protoc ${PROTOC_INCLUDE} --gotag_out=auto="bson-as-camel+json-as-camel":. model/db/db.proto
+	cd src && protoc ${PROTOC_INCLUDE} --gotag_out=xxx="bson+\"-\" json+\"-\"":. model/db/db.proto
 
-src/model/svc/svc.pb.go: .EXTRA_PREREQS = ${PROTOC_CHECK_VERSION}
+src/model/svc/svc.pb.go: .EXTRA_PREREQS = ${PROTOC_CHECK_VERSION} ${PROTOC_GEN_GO} ${PROTOC_GEN_GOTAG}
 src/model/svc/svc.pb.go: src/model/tagger/tagger.pb.go \
 		src/model/common.pb.go \
 		src/model/svc/svc.proto
-	cd src && protoc -I /usr/local/include -I . --go_out=:. model/svc/svc.proto
-	cd src && protoc -I /usr/local/include -I . --gotag_out=auto="bson-as-camel+json-as-camel":. model/svc/svc.proto
-	cd src && protoc -I /usr/local/include -I . --gotag_out=xxx="bson+\"-\" json+\"-\"":. model/svc/svc.proto
+	cd src && protoc ${PROTOC_INCLUDE} --go_out=:. model/svc/svc.proto
+	cd src && protoc ${PROTOC_INCLUDE} --gotag_out=auto="bson-as-camel+json-as-camel":. model/svc/svc.proto
+	cd src && protoc ${PROTOC_INCLUDE} --gotag_out=xxx="bson+\"-\" json+\"-\"":. model/svc/svc.proto
 
-src/model/common.pb.go: .EXTRA_PREREQS = ${PROTOC_CHECK_VERSION}
+src/model/common.pb.go: .EXTRA_PREREQS = ${PROTOC_CHECK_VERSION} ${PROTOC_GEN_GO} ${PROTOC_GEN_GOTAG}
 src/model/common.pb.go: src/model/common.proto
-	cd src && protoc -I /usr/local/include -I . --go_out=:. model/common.proto
+	cd src && protoc ${PROTOC_INCLUDE} --go_out=:. model/common.proto
 # TODO without the full package path (e.g. with relative path), wrong import path is generated in the files that import this, but with it the file gets placed in an unexpected place
 	@mv src/${PACKAGE_NAME}/model/common.pb.go src/model/common.pb.go
 	@rm -r src/$(shell echo "${PACKAGE_NAME}" | grep -Eoh "^[^/$$]+")
 
-src/model/tagger/tagger.pb.go: .EXTRA_PREREQS = ${PROTOC_CHECK_VERSION}
+src/model/tagger/tagger.pb.go: .EXTRA_PREREQS = ${PROTOC_CHECK_VERSION} ${PROTOC_GEN_GO} ${PROTOC_GEN_GOTAG}
 src/model/tagger/tagger.pb.go: src/model/tagger/tagger.proto
-	cd src && protoc -I /usr/local/include -I . --go_out=:. model/tagger/tagger.proto
+	cd src && protoc ${PROTOC_INCLUDE} --go_out=:. model/tagger/tagger.proto
 # TODO without the full package path (e.g. with relative path), wrong import path is generated in the files that import this, but with it the file gets placed in an unexpected place
 	@mv src/${PACKAGE_NAME}/model/tagger/tagger.pb.go src/model/tagger/tagger.pb.go
 	@rm -r src/$(shell echo "${PACKAGE_NAME}" | grep -Eoh "^[^/$$]+")
@@ -185,9 +188,6 @@ ${EXECUTABLE}: $(shell find ./src -type f) \
 		${MOCKS_OUT} \
 		${SWAGGER_OUT}
 	# Compiling...
-	echo proto deps = ${PROTO_OUT}
-	echo mocks deps = ${MOCKS_OUT}
-	echo swagger deps = ${SWAGGER_OUT}
 	cd src && go build \
 		-ldflags "-X ${PACKAGE_NAME}/conf.Executable=${EXECUTABLE} \
 		          -X ${PACKAGE_NAME}/conf.GitVersion=${GIT_VERSION}" \
@@ -246,7 +246,7 @@ infra/dev/.env:
 dev-infra-clean:
 	cd infra/dev && ${DOCKER} compose rm -s -f -v
 #	${DOCKER} secret rm MONGO_USR MONGO_PWD || true
-	[ -d infra/dev/data ] && sudo rm -rf infra/dev/data || true
+	@[ -d infra/dev/data ] && (echo sudo rm -rf infra/dev/data && sudo rm -rf infra/dev/data) || true
 	# `make dev-infra-clean` not cleaning infra/dev/.env and infra/dev/.env-update to keep generated passwords.
 	# Use `make dev-infra-clean-env` to clean them.
 
@@ -289,6 +289,7 @@ dev-docker-start:
 .PHONY: dev-docker-stop
 dev-docker-stop:
 	${DOCKER} rm -f ${CONTAINER_NAME}
+
 
 .PHONY: infra-stage
 infra-stage:

@@ -4,7 +4,7 @@ ARG EXECUTABLE=gorestapicmd
 ARG GIT_VERSION=unknown
 
 # debian biullseye is on an older libc that forces lower version of protoc
-# FROM golang:1.19.4-bullseye as distro
+# FR OM golang:1.19.4-bullseye as distro
 # RUN apt-get update \
 #  && DEBIAN_FRONTEND=noninteractive \
 #       apt-get install --no-install-recommends --assume-yes \
