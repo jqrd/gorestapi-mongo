@@ -110,17 +110,17 @@ src/mocks/DataStore.go: src/gorestapi/datastore.go
 	cd src && mockery --dir ./gorestapi --name DataStore
 
 
+PROTOC_CHECK_VERSION := infra/dev/.protoc.version
 PROTO_OUT := src/model/db/db.pb.go \
 		src/model/svc/svc.pb.go
 
 .PHONY: proto
-proto: protoc-check-version ${PROTO_OUT}
+proto: ${PROTOC_CHECK_VERSION} ${PROTO_OUT}
 
-.PHONY: protoc-check-version
-protoc-check-version: .EXTRA_PREREQS = ${PROTOC}
-protoc-check-version:
+${PROTOC_CHECK_VERSION}: ${PROTOC}
 	$(eval PROTOC_VERSION=$(shell protoc --version | sed 's/.* //'))
-	@(echo "${PROTOC_MIN_VERSION}" && echo "${PROTOC_VERSION}") | (sort -V -c > /dev/null 2>&1 && echo "You have protoc ${PROTOC_VERSION} >= min version ${PROTOC_MIN_VERSION} ✓") || (echo "Minimum required version of protoc is ${PROTOC_MIN_VERSION}, please upgrade (you have ${PROTOC_VERSION})"; echo "(older ones reference deprecated protobuf package from github.com instead of google.golang.org)" && exit 1)
+	@(echo "${PROTOC_MIN_VERSION}" && echo "${PROTOC_VERSION}") | (sort -V -c > /dev/null 2>&1 && echo "You have protoc ${PROTOC_VERSION} >= min version ${PROTOC_MIN_VERSION} ✓") || (echo "⛔️ minimum required version of protoc is ${PROTOC_MIN_VERSION}, please upgrade (you have ${PROTOC_VERSION})"; echo "(older ones reference deprecated protobuf package from github.com instead of google.golang.org)" && exit 1)
+	@echo "${PROTOC_VERSION}" > ${PROTOC_CHECK_VERSION}
 
 .PHONY: proto-clean
 proto-clean:
@@ -129,7 +129,7 @@ proto-clean:
 	@rm -f src/model/common.pb.go
 	@rm -f src/model/tagger/tagger.pb.go
 
-src/model/db/db.pb.go: .EXTRA_PREREQS = ${PROTOC}
+src/model/db/db.pb.go: .EXTRA_PREREQS = ${PROTOC_CHECK_VERSION}
 src/model/db/db.pb.go: src/model/tagger/tagger.pb.go \
 		src/model/common.pb.go \
 		src/model/db/db.proto
@@ -137,7 +137,7 @@ src/model/db/db.pb.go: src/model/tagger/tagger.pb.go \
 	cd src && protoc -I /usr/local/include -I . --gotag_out=auto="bson-as-camel+json-as-camel":. model/db/db.proto
 	cd src && protoc -I /usr/local/include -I . --gotag_out=xxx="bson+\"-\" json+\"-\"":. model/db/db.proto
 
-src/model/svc/svc.pb.go: .EXTRA_PREREQS = ${PROTOC}
+src/model/svc/svc.pb.go: .EXTRA_PREREQS = ${PROTOC_CHECK_VERSION}
 src/model/svc/svc.pb.go: src/model/tagger/tagger.pb.go \
 		src/model/common.pb.go \
 		src/model/svc/svc.proto
@@ -145,14 +145,14 @@ src/model/svc/svc.pb.go: src/model/tagger/tagger.pb.go \
 	cd src && protoc -I /usr/local/include -I . --gotag_out=auto="bson-as-camel+json-as-camel":. model/svc/svc.proto
 	cd src && protoc -I /usr/local/include -I . --gotag_out=xxx="bson+\"-\" json+\"-\"":. model/svc/svc.proto
 
-src/model/common.pb.go: .EXTRA_PREREQS = ${PROTOC}
+src/model/common.pb.go: .EXTRA_PREREQS = ${PROTOC_CHECK_VERSION}
 src/model/common.pb.go: src/model/common.proto
 	cd src && protoc -I /usr/local/include -I . --go_out=:. model/common.proto
 # TODO without the full package path (e.g. with relative path), wrong import path is generated in the files that import this, but with it the file gets placed in an unexpected place
 	@mv src/${PACKAGE_NAME}/model/common.pb.go src/model/common.pb.go
 	@rm -r src/$(shell echo "${PACKAGE_NAME}" | grep -Eoh "^[^/$$]+")
 
-src/model/tagger/tagger.pb.go: .EXTRA_PREREQS = ${PROTOC}
+src/model/tagger/tagger.pb.go: .EXTRA_PREREQS = ${PROTOC_CHECK_VERSION}
 src/model/tagger/tagger.pb.go: src/model/tagger/tagger.proto
 	cd src && protoc -I /usr/local/include -I . --go_out=:. model/tagger/tagger.proto
 # TODO without the full package path (e.g. with relative path), wrong import path is generated in the files that import this, but with it the file gets placed in an unexpected place

@@ -51,7 +51,7 @@ func (api *ThingsAPI) Create() http.HandlerFunc {
 		render.ErrInternalWithRequestID(w, requestID, nil)
 		api.s.logger.Errorw(fmt.Sprintf("%v error: %v", action, message), "error", err, "request_id", requestID)
 	}
-	// TODO test
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 

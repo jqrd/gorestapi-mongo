@@ -12,5 +12,5 @@ src/model/**/*.pb.go
 mocks
 
 infra/dev/data
-infra/dev/.env
-infra/dev/.env-update
+infra/dev/.env*
+infra/dev/.*.version
