@@ -53,11 +53,11 @@ run: ${EXECUTABLE} dev-infra-up
 	$(eval $(shell grep -Eoh "MONGO_PORT=.*" infra/dev/.env))
 	$(eval $(shell grep -Eoh "MONGO_USR=.*" infra/dev/.env))
 	$(eval $(shell grep -Eoh "MONGO_PWD=.*" infra/dev/.env))
-	$(shell env "Mongo.Host=localhost" \
-		env "Mongo.Port=${MONGO_PORT}" \
-		env "Mongo.Username=${MONGO_USR}" \
-		env "Mongo.Password=${MONGO_PWD}" \
-		./${EXECUTABLE} api )
+	DATABASE_HOST=localhost \
+		DATABASE_PORT=${MONGO_PORT} \
+		DATABASE_USERNAME=${MONGO_USR} \
+		DATABASE_PASSWORD=${MONGO_PWD} \
+		./${EXECUTABLE} api
 
 # Tools install/check
 ${MOCKERY}:
@@ -258,10 +258,10 @@ dev-docker-start:
 	${DOCKER} run -d \
 		-e server.port=${PORT} \
 		-p ${PORT}:${PORT}/tcp \
-		-e Mongo.Host=${MONGO_HOST} \
-		-e Mongo.Port=${MONGO_PORT} \
-		-e Mongo.Username=${MONGO_USR} \
-		-e Mongo.Password=${MONGO_PWD} \
+		-e DATABASE_HOST=${MONGO_HOST} \
+		-e DATABASE_PORT=${MONGO_PORT} \
+		-e DATABASE_USERNAME=${MONGO_USR} \
+		-e DATABASE_PASSWORD=${MONGO_PWD} \
 		--network=dev_gorestapi-network \
 		--name ${CONTAINER_NAME}\
 		${CONTAINER_NAME}:dev

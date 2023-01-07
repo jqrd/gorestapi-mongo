@@ -12,10 +12,10 @@
       "cwd": "${workspaceFolder}/src",
       "program": "${workspaceFolder}/src/main.go",
       "env": {
-        "Mongo.Host": "localhost",
-        "Mongo.Port": "${input:MONGO_PORT}",
-        "Mongo.Username": "${input:MONGO_USR}",
-        "Mongo.Password": "${input:MONGO_PWD}",
+        "DATABASE_HOST": "localhost",
+        "DATABASE_PORT": "${input:MONGO_PORT}",
+        "DATABASE_USERNAME": "${input:MONGO_USR}",
+        "DATABASE_PASSWORD": "${input:MONGO_PWD}",
       },
       "args": [
         "api"

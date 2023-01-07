@@ -177,16 +177,6 @@ func newDatabase() (gorestapi.DataStore, error) {
 	// 	postgresConfig.QueryLogger = log.NewWrapper(log.Base.Named("store.postgres.query"), zapcore.DebugLevel)
 	// }
 
-	envConfig, err := conf.GetEnvConfig[mongodb.Config]("Mongo")
-	if err != nil {
-		return nil, err
-	}
-	config.Host = envConfig.Host
-	config.Port = envConfig.Port
-	config.Username = envConfig.Username
-	config.Password = envConfig.Password
-	// TODO other configs from env?
-
 	// Create client
 	client, err := mongodb.New(config)
 	if err != nil {
