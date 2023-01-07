@@ -7,11 +7,24 @@ GIT_VERSION := $(shell git describe --dirty --always --tags --long)
 PACKAGE_NAME := $(shell cd src && go list -m -f '{{.Path}}')
 CONTAINER_NAME := $(shell echo "${PACKAGE_NAME}" | grep -Eo '(^|/)[^/]+$$' | sed s!/!!)
 
+FindVersion = $(shell grep -Eoh "$(1) [^ ]+" src/go.mod | sed -E "s/^.* //")
+
 # go tools:
 MOCKERY := ${GOPATH}/bin/mockery
+MOCKERY_PACKAGE := github.com/vektra/mockery/v3
+MOCKERY_VERSION := $(call FindVersion,${MOCKERY_PACKAGE})
+
 SWAG :=	${GOPATH}/bin/swag
+SWAG_PACKAGE := github.com/swaggo/swag
+SWAG_VERSION := $(call FindVersion,${SWAG_PACKAGE})
+
 PROTOC_GEN_GO := ${GOPATH}/bin/protoc-gen-go
+PROTOC_GEN_GO_PACKAGE := google.golang.org/protobuf
+PROTOC_GEN_GO_VERSION :=$(call FindVersion,${PROTOC_GEN_GO_PACKAGE})
+
 PROTOC_GEN_GOTAG := ${GOPATH}/bin/protoc-gen-gotag
+PROTOC_GEN_GOTAG_PACKAGE := github.com/srikrsna/protoc-gen-gotag
+PROTOC_GEN_GOTAG_VERSION :=$(call FindVersion,${PROTOC_GEN_GOTAG_PACKAGE})
 
 # external tools:
 PROTOC := $(if $(shell which protoc),$(shell which protoc),"protoc_not_found")
@@ -47,6 +60,13 @@ which:
 	@echo "PROTOC_GEN_GOTAG =  ${PROTOC_GEN_GOTAG}"
 	@echo "DOCKER           =  ${DOCKER}"
 
+.PHONY: which-package
+which-package:
+	@echo mockery           = ${MOCKERY_PACKAGE} ${MOCKERY_VERSION}
+	@echo swag             = ${SWAG_PACKAGE} ${SWAG_VERSION}
+	@echo protoc-gen-go    = ${PROTOC_GEN_GO_PACKAGE} ${PROTOC_GEN_GO_VERSION}
+	@echo protoc-gen-gotag = ${PROTOC_GEN_GOTAG_PACKAGE} ${PROTOC_GEN_GOTAG_VERSION}
+
 
 .PHONY: run
 run: ${EXECUTABLE} dev-infra-up
@@ -61,13 +81,13 @@ run: ${EXECUTABLE} dev-infra-up
 
 # Tools install/check
 ${MOCKERY}:
-	cd src && go install github.com/vektra/mockery/v3@v3.0.0-alpha.0
+	cd src && go install ${MOCKERY_PACKAGE}@${MOCKERY_VERSION}
 ${SWAG}:
-	cd src && go install github.com/swaggo/swag/cmd/swag@latest
+	cd src && go install ${SWAG_PACKAGE}/cmd/swag@${SWAG_VERSION}
 ${PROTOC_GEN_GO}:
-	cd src && go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+	cd src && go install ${PROTOC_GEN_GO_PACKAGE}/cmd/protoc-gen-go@${PROTOC_GEN_GO_VERSION}
 ${PROTOC_GEN_GOTAG}:
-	cd src && go install github.com/srikrsna/protoc-gen-gotag
+	cd src && go install ${PROTOC_GEN_GOTAG_PACKAGE}@${PROTOC_GEN_GOTAG_VERSION}
 ${PROTOC}:
 	@echo "Protoc not found, please install protoc." && exit 1
 
