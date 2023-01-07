@@ -1,0 +1,77 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "${input:EXECUTABLE}"
+            ],
+            "group": "build",
+            "problemMatcher": "$go"
+        },
+        {
+            "label": "Build (docker)",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "dev-docker-build"
+            ],
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Build and deploy (docker)",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "run-docker"
+            ],
+            "group": "build",
+            "problemMatcher": []
+        }
+    ],
+    "inputs": [
+      {
+        "id": "PACKAGENAME",
+        "type": "command",
+        "command": "extension.commandvariable.transform",
+        "args": {
+          "text": "${command:gomod}",
+          "find": "^module ([^\n]*)\n.*$",
+          "replace": "$1",
+          "flags": "si",
+          "command": {
+            "gomod": {
+              "command": "extension.commandvariable.file.content",
+              "args": {
+                "fileName": "${workspaceFolder:src}/go.mod",
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "EXECUTABLE",
+        "type": "command",
+        "command": "extension.commandvariable.transform",
+        "args": {
+          "text": "${command:Makefile}",
+          "find": "^(?:.*\n)?EXECUTABLE := ([^\n]*)\n.*$",
+          "replace": "$1",
+          "flags": "s",
+          "command": {
+            "Makefile": {
+              "command": "extension.commandvariable.file.content",
+              "args": {
+                "fileName": "${workspaceFolder:src}/../Makefile",
+              }
+            }
+          }
+        }
+      }
+    ]
+}

@@ -62,14 +62,14 @@
       "command": "extension.commandvariable.transform",
       "args": {
         "text": "${command:Makefile}",
-        "find": "^EXECUTABLE := ([^\n]*)\n.*$",
+        "find": "^(?:.*\n)?EXECUTABLE := ([^\n]*)\n.*$",
         "replace": "$1",
         "flags": "s",
         "command": {
           "Makefile": {
             "command": "extension.commandvariable.file.content",
             "args": {
-              "fileName": "${workspaceFolder:src}/../Makefile2",
+              "fileName": "${workspaceFolder:src}/../Makefile",
             }
           }
         }
