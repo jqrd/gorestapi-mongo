@@ -3,10 +3,7 @@ package db
 import "github.com/jqrd/gorestapi-mongo/store/mongodb"
 
 // TODO is there a better way to do this with generics? at least to share impl.
-
-func (obj *Widget) ID() string {
-	return obj.Id
-}
+// TODO probably will scrap protobuf and go with hand rolled go structs...
 
 func (obj *Widget) SetID(id string) mongodb.MongoDocument {
 	if obj == nil {
@@ -14,10 +11,6 @@ func (obj *Widget) SetID(id string) mongodb.MongoDocument {
 	}
 	obj.Id = id
 	return obj
-}
-
-func (obj *Thing) ID() string {
-	return obj.Id
 }
 
 func (obj *Thing) SetID(id string) mongodb.MongoDocument {

@@ -1,6 +1,6 @@
 package mongodb
 
 type MongoDocument interface {
-	ID() string
+	GetId() string
 	SetID(id string) MongoDocument
 }
