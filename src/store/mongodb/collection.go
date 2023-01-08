@@ -39,7 +39,7 @@ func (c *mongoCollection[T]) InsertOne(ctx context.Context, obj T, options ...*o
 	}
 
 	id := result.InsertedID.(primitive.ObjectID)
-	obj.SetID(id.Hex())
+	obj.SetId(id.Hex())
 
 	return nil
 }
@@ -56,7 +56,7 @@ func (c *mongoCollection[T]) InsertMany(ctx context.Context, obj []T, options ..
 
 	for i, insertedId := range result.InsertedIDs {
 		id := insertedId.(primitive.ObjectID)
-		obj[i].SetID(id.Hex())
+		obj[i].SetId(id.Hex())
 	}
 
 	return nil
