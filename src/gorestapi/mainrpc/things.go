@@ -16,6 +16,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type ThingsAPI struct {
@@ -281,11 +282,21 @@ func toSvcThing(dbThing *db.Thing, store gorestapi.DataStore, ctx context.Contex
 		Id:          dbThing.Id,
 		Name:        dbThing.Name,
 		Description: dbThing.Description,
-		Widgets:     make([]*svc.ThingWidget, len(dbThing.WidgetIDs)),
 	}
 
-	if len(dbThing.WidgetIDs) != 0 {
-		filter := bson.M{"_id": bson.M{"$in": dbThing.WidgetIDs}}
+	if dbThing.WidgetIDs != nil && len(dbThing.WidgetIDs) > 0 {
+		thing.Widgets = make([]*svc.ThingWidget, len(dbThing.WidgetIDs))
+
+		ids := make([]primitive.ObjectID, len(dbThing.WidgetIDs))
+		for i, id := range dbThing.WidgetIDs {
+			objectId, err := primitive.ObjectIDFromHex(id)
+			if err != nil {
+				return nil, err
+			}
+			ids[i] = objectId
+		}
+
+		filter := bson.M{"_id": bson.M{"$in": ids}}
 		widgets, err := store.Widgets().Find(ctx, filter)
 		if err != nil {
 			return nil, err
@@ -302,6 +313,8 @@ func toSvcThing(dbThing *db.Thing, store gorestapi.DataStore, ctx context.Contex
 				Type:     dbWidget.Type,
 			}
 		}
+	} else {
+		thing.Widgets = make([]*svc.ThingWidget, 0)
 	}
 
 	return thing, nil
