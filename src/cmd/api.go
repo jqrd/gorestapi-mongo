@@ -184,8 +184,8 @@ func newDatabase() (gorestapi.DataStore, error) {
 	}
 
 	store := gorestapi.NewDataStore(
-		mongodb.Collection[*db.Widget](client, mongodb.WidgetsCollection),
-		mongodb.Collection[*db.Thing](client, mongodb.ThingsCollection),
+		mongodb.Collection[*db.Widget](client, db.WidgetsCollection),
+		mongodb.Collection[*db.Thing](client, db.ThingsCollection),
 	)
 
 	return store, nil

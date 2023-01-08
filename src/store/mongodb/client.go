@@ -13,8 +13,7 @@ import (
 	mongodriver "github.com/jqrd/gorestapi-mongo/store/driver/mongo"
 )
 
-const WidgetsCollection string = "widgets"
-const ThingsCollection string = "things"
+const TempCollection string = "temp"
 
 type Config struct {
 	mongodriver.Config `conf:",squash"`
@@ -43,9 +42,13 @@ func New(cfg *Config) (*Client, error) {
 
 	if len(dbs) == 0 {
 		log.Warn("Database not found, creating ", cfg.Database)
-		err := db.CreateCollection(ctx, WidgetsCollection)
+		err := db.CreateCollection(ctx, TempCollection)
 		if err != nil {
-			return nil, fmt.Errorf("could not create %v collection in the database: %v", WidgetsCollection, err.Error())
+			return nil, fmt.Errorf("could not create %v collection in the database: %v", TempCollection, err.Error())
+		}
+		err = db.Collection(TempCollection).Drop(ctx)
+		if err != nil {
+			log.Warnf("could not drop %v collection in the database: %v", TempCollection, err.Error())
 		}
 	}
 
