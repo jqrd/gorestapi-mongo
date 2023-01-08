@@ -46,7 +46,12 @@ dev-infra: dev-infra-up
 run-docker: dev-docker-run
 
 .PHONY: clean
-clean: dev-docker-stop dev-infra-clean proto-clean mocks-clean swagger-clean ${EXECUTABLE}-clean
+clean: ${EXECUTABLE}-clean \
+	proto-clean \
+	mocks-clean \
+	swagger-clean \
+	dev-docker-stop \
+	dev-infra-clean  
 
 
 .PHONY: which
