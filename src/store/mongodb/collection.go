@@ -69,14 +69,9 @@ func (c *mongoCollection[T]) FindOne(ctx context.Context, id string, options ...
 	}
 
 	result := c.col.FindOne(ctx, bson.M{"_id": docId})
-	obj := (*new(T)).SetID(id)
-	raw, _ := result.DecodeBytes()
-	_ = raw
+	obj := new(T)
 	err = result.Decode(obj)
-	if err != nil {
-		return *new(T), store.TryTranslateMongoError(err)
-	}
-	return obj.(T), nil
+	return *obj, store.TryTranslateMongoError(err)
 }
 
 func (c *mongoCollection[T]) Find(ctx context.Context, filter bson.M, options ...*options.FindOptions) ([]T, error) {
@@ -89,25 +84,30 @@ func (c *mongoCollection[T]) Find(ctx context.Context, filter bson.M, options ..
 	}
 
 	found := make([]T, 0)
-	for result.Next(ctx) {
-		if result.Err() != nil {
-			return nil, err
-		}
-		obj := (*new(T)).SetID("")
-		err = result.Decode(obj)
-		if err != nil {
-			// TODO log and skip vs fail?
-			return found, err
-		}
-		found = append(found, obj.(T))
-	}
-
-	return found, store.TryTranslateMongoError(result.Err())
+	err = result.All(ctx, &found)
+	return found, err
 }
 
 func (c *mongoCollection[T]) UpdateOne(ctx context.Context, obj T, options ...*options.UpdateOptions) error {
-	// TODO
-	log.Panic("not implemented")
+	docId, err := primitive.ObjectIDFromHex(obj.GetId())
+	if err != nil {
+		return store.ErrNotFound
+	}
+
+	result, err := c.col.UpdateOne(ctx, bson.M{"_id": docId}, obj, options...)
+	if err != nil {
+		return err
+	}
+
+	if result.UpsertedID == nil {
+		return store.ErrNotFound
+	}
+
+	id := result.UpsertedID.(primitive.ObjectID)
+	if id.Hex() != obj.GetId() {
+		return store.ErrNotFound
+	}
+
 	return nil
 }
 
